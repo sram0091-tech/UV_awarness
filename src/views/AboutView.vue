@@ -41,9 +41,32 @@
         </div>
       </div>
 
-      <div class="about-contact">
-        <p class="contact-title">Need help with the dashboard or API wiring?</p>
-        <p>Email: <a href="mailto:ywan1154@student.monash.edu">ywan1154@student.monash.edu</a></p>
+      <div class="feedback-card">
+        <h3 class="feedback-title">Feedback and Contributions</h3>
+
+        <p class="feedback-text">
+          We strive to present accurate and accessible information about sun safety
+          and skin cancer risk in Australia.
+        </p>
+
+        <p class="feedback-text">
+          If you spot an error, have suggestions for improvement, or would like to
+          contribute additional insights or data sources, please feel free to contact us.
+        </p>
+
+        <div class="feedback-contact">
+          <span>Email:</span>
+          <a href="mailto:ywan1154@student.monash.edu">
+            ywan1154@student.monash.edu
+          </a>
+        </div>
+
+        <a
+          class="feedback-button"
+          href="mailto:ywan1154@student.monash.edu"
+        >
+          Contact Us
+        </a>
       </div>
     </div>
   </div>
@@ -183,5 +206,60 @@
   .about-contact {
     max-width: 100%;
   }
+}
+.feedback-card{
+  max-width: 900px;
+  margin: 80px auto;
+  padding: 40px;
+  background: linear-gradient(145deg,#2a2a2a,#1f1f1f);
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.feedback-title{
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.feedback-text{
+  color: #bdbdbd;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.feedback-contact{
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.feedback-contact span{
+  font-weight: 600;
+}
+
+.feedback-contact a{
+  color: #f7c948;
+  margin-left: 8px;
+  text-decoration: none;
+}
+
+.feedback-contact a:hover{
+  text-decoration: underline;
+}
+
+.feedback-button{
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: #f7c948;
+  color: #000;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.feedback-button:hover{
+  transform: translateY(-2px);
 }
 </style>

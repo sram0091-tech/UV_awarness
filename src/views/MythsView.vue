@@ -232,8 +232,14 @@ function showCopied(id) {
             </div>
 
             <div class="myth-citation">
-              <span class="citation-label">Source:</span>
-              <a :href="myth.citationUrl" target="_blank" rel="noopener noreferrer">
+              <span class="citation-label">Source</span>
+
+              <a
+                :href="myth.citationUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="citation-link"
+              >
                 {{ myth.citationLabel }}
               </a>
             </div>
@@ -420,28 +426,38 @@ function showCopied(id) {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.myth-citation {
-  margin-top: 12px;
-  margin-bottom: 18px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #cfcfcf;
+.myth-citation{
+  margin-top:18px;
+  padding:14px 16px;
+  border-radius:12px;
+
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
+
+  font-size:14px;
+  line-height:1.5;
 }
 
-.citation-label {
-  font-weight: 700;
-  margin-right: 6px;
+.citation-label{
+  display:block;
+  font-weight:600;
+  font-size:12px;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+
+  color:#9ca3af;
+  margin-bottom:4px;
 }
 
-.myth-citation a {
-  color: #f7c948;
-  text-decoration: none;
+.citation-link{
+  color:#f7c948;
+  text-decoration:none;
+  word-break:break-word;
 }
 
-.myth-citation a:hover {
-  text-decoration: underline;
+.citation-link:hover{
+  text-decoration:underline;
 }
-
 .myth-share {
   display: flex;
   flex-wrap: wrap;
