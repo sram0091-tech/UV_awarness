@@ -3,7 +3,6 @@ import { ref, onMounted } from 'vue'
 import SummaryCards from '../components/SummaryCards.vue'
 import FilterBar from '../components/FilterBar.vue'
 import InsightCard from '../components/InsightCard.vue'
-import RiskLegend from '../components/RiskLegend.vue'
 import CancerStateBarChart from '../components/charts/CancerStateBarChart.vue'
 import CancerTypeBarChart from '../components/charts/CancerTypeBarChart.vue'
 import CancerTrendLineChart from '../components/charts/CancerTrendLineChart.vue'
@@ -65,20 +64,12 @@ const insightText = ref(
   'Once the API responds, this card will describe the main rate-based result using the returned summary and chart values.'
 )
 
-const legendItems = [
-  { color: '#FDCA00', label: '/api/cancer/filters', description: 'Populates Year, Sex, State, and Cancer Type dropdowns.' },
-  { color: '#F26A01', label: '/api/cancer/rate-by-state', description: 'Builds the state chart and state table.' },
-  { color: '#FBB34F', label: '/api/cancer/rate-by-cancer-type', description: 'Builds the cancer-type comparison chart.' },
-  { color: '#CD0000', label: '/api/cancer/trend', description: 'Builds the yearly line chart.' },
-  { color: '#BFF5FE', label: '/api/cancer/summary', description: 'Populates the summary cards.' }
-]
-
 async function loadFilters() {
   const data = await cancerApi.getFilters()
   filters.value = {
     years: data.years || [],
     sexes: data.sexes || [],
-    states: data.states || [],
+    states: (data.states || []).filter(s => s !== 'Australia'),
     cancerTypes: data.cancerTypes || data.cancer_types || []
   }
 }
@@ -99,7 +90,10 @@ async function loadDashboard() {
       cancerApi.getTrend(params),
       cancerApi.getSummary(params)
     ])
-    stateRates.value = Array.isArray(stateRatesRes) ? stateRatesRes : []
+    
+    stateRates.value = Array.isArray(stateRatesRes)
+  ? stateRatesRes.filter(row => row.state !== 'Australia').sort((a, b) => (Number(b.rate2023) || 0) - (Number(a.rate2023) || 0))
+  : []
     typeRates.value = Array.isArray(typeRatesRes) ? typeRatesRes : []
     trend.value = Array.isArray(trendRes) ? trendRes : []
     summary.value = summaryRes
@@ -115,20 +109,12 @@ async function loadDashboard() {
   }
 }
 
-const statePills = ref([])
-
-function updateStatePills() {
-  statePills.value = stateRates.value.slice(0, 10).map((row) => ({
-    text: `${row.state}: ${numberOrDash(row.rate2023)}`
-  }))
-}
-
 onMounted(() => {
-  loadDashboard().then(() => updateStatePills())
+  loadDashboard()
 })
 
 function onApply() {
-  loadDashboard().then(() => updateStatePills())
+  loadDashboard()
 }
 </script>
 
@@ -150,7 +136,6 @@ function onApply() {
 
       <div class="status-bar">
         <div :class="['status', statusOk ? 'ok' : 'err']">{{ status }}</div>
-        <button type="button" class="apply-btn" @click="onApply">Refresh cancer data</button>
       </div>
 
       <div class="panel">
@@ -176,13 +161,6 @@ function onApply() {
               <option v-for="st in filters.states" :key="st" :value="st">{{ st }}</option>
             </select>
           </div>
-          <div class="filter-group">
-            <label for="cancerType">Cancer Type</label>
-            <select id="cancerType" v-model="cancerType">
-              <option value="">All</option>
-              <option v-for="ct in filters.cancerTypes" :key="ct" :value="ct">{{ ct }}</option>
-            </select>
-          </div>
         </FilterBar>
 
         <SummaryCards :items="summaryItems" />
@@ -191,16 +169,10 @@ function onApply() {
           <div class="chart-card">
             <div class="chart-title">Rate by State</div>
             <CancerStateBarChart :data="stateRates" />
-            <div class="state-pills">
-              <span v-for="(pill, i) in statePills" :key="i" class="state-pill">{{ pill.text }}</span>
-            </div>
           </div>
           <div class="chart-card">
             <div class="chart-title">Rate by Cancer Type</div>
             <CancerTypeBarChart :data="typeRates" />
-            <p class="small-note">
-              If your back-end currently returns placeholder values for cancer types, this chart will still render the expected structure.
-            </p>
           </div>
         </div>
 
@@ -231,7 +203,6 @@ function onApply() {
           </table>
         </div>
         <div>
-          <RiskLegend title="How this page is wired" :items="legendItems" />
           <InsightCard title="Live Insights" :content="insightText" />
         </div>
       </div>
