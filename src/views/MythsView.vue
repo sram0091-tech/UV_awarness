@@ -7,19 +7,22 @@ const myths = [
     title: '☁️ Myth 1: Cloudy means safe',
     wrong: '"If it’s cloudy, UV exposure is low."',
     right: 'Cloud cover does not remove UV risk. UV can still be high enough to damage skin.',
-    citation: 'Connect your own real citations here once your content is ready.'
+    citation: 'Parisi, A. V., Sabburg, J., Turner, J., & Dunn, P. K. (2008). Cloud observations for the statistical evaluation of the UV index at Toowoomba, Australia. International Journal of Biometeorology, 52(2), 159–166. https://doi.org/10.1007/s00484-007-0106-7
+
+'
   },
   {
     title: '🏖️ Myth 2: Sunscreen is only for the beach',
     wrong: '"Daily commuting doesn’t need sun protection."',
     right: 'Everyday outdoor exposure can still contribute to cumulative skin damage.',
-    citation: 'Add your paper, journal, or public health source here.'
+    citation: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4259210/'
   },
   {
     title: '🌞 Myth 3: A tan is healthy',
     wrong: '"A tan is a sign of strong, healthy skin."',
     right: 'Tanning is a biological response to DNA damage caused by UV radiation.',
-    citation: 'Replace with the citation block you plan to use in the final version.'
+    citation: 'Cancer Council Australia. (n.d.). Sunscreen and SPF explained. https://www.cancer.org.au/cancer-information/causes-and-prevention/sun-safety/sunscreen
+    Cancer Council Australia. (n.d.). The science behind sunscreen and SPF. https://www.cancer.org.au/cancer-information/causes-and-prevention/sun-safety/sunscreen/science'
   }
 ]
 
