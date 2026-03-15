@@ -41,7 +41,7 @@ function go(path) {
       <div class="home-hero">
         <h2>{{ title }}</h2>
         <div class="home-image-strip">
-          <div class="sun-icon">☀️</div>
+          <img src="/homepageimage.webp" alt="Sun Safety Dashboard" class="home-hero-image">
         </div>
         <p class="home-tagline">{{ tagline }}</p>
         <div class="home-ctas">
@@ -54,9 +54,6 @@ function go(path) {
             {{ btn.label }}
           </button>
         </div>
-        <p class="footer-note">
-          Tip: paste your deployed API base URL in the top-right input, or use the default local URL.
-        </p>
       </div>
     </div>
   </div>
