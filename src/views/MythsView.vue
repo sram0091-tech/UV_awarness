@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import html2canvas from 'html2canvas'
 
 const myths = [
   {
@@ -84,6 +85,82 @@ function shareToLinkedIn(myth) {
   window.open(u, '_blank', 'noopener,noreferrer')
 }
 
+/** Instagram has no web share URL. Share card as image: on mobile use Web Share with file (Instagram may appear), else download image and open Instagram. */
+const cardRefs = ref([])
+
+function setCardRef(i, el) {
+  if (el) cardRefs.value[i] = el
+}
+
+async function getCardImageBlob(cardIndex) {
+  const el = cardRefs.value[cardIndex]
+  if (!el) return null
+  const canvas = await html2canvas(el, {
+    backgroundColor: 'rgba(217, 217, 217, 0.18)',
+    scale: 2,
+    useCORS: true,
+    ignoreElements: (element) => element.classList.contains('myth-share')
+  })
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/png', 1)
+  })
+}
+
+/** Share myth as card-style image (Web Share with file or download). */
+async function shareCardAsImage(myth, cardIndex) {
+  const blob = await getCardImageBlob(cardIndex)
+  if (!blob) return
+  const file = new File([blob], `sun-safety-myth-${cardIndex + 1}.png`, { type: 'image/png' })
+  if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: myth.title,
+        text: getShareText(myth),
+        files: [file]
+      })
+      showCopied(`share-img-${cardIndex}`)
+      return
+    } catch (e) {
+      if (e.name === 'AbortError') return
+    }
+  }
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = file.name
+  a.click()
+  URL.revokeObjectURL(url)
+  showCopied(`share-img-${cardIndex}`)
+}
+
+/** Share to Instagram: share card image (mobile share sheet may include Instagram) or download image and open Instagram. */
+async function shareToInstagram(myth, cardIndex) {
+  const blob = await getCardImageBlob(cardIndex)
+  if (!blob) return
+  const file = new File([blob], `sun-safety-myth-${cardIndex + 1}.png`, { type: 'image/png' })
+  if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: myth.title,
+        text: getShareText(myth),
+        files: [file]
+      })
+      showCopied(`share-ig-${cardIndex}`)
+      return
+    } catch (e) {
+      if (e.name === 'AbortError') return
+    }
+  }
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `sun-safety-myth-${cardIndex + 1}.png`
+  a.click()
+  URL.revokeObjectURL(url)
+  window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer')
+  showCopied(`share-ig-${cardIndex}`)
+}
+
 /** Copy myth text to clipboard. */
 async function copyMythText(myth) {
   await copyToClipboard(getShareText(myth))
@@ -126,7 +203,7 @@ function showCopied(id) {
         Common Sun Safety Myths
       </div>
       <div class="myths-grid">
-        <div v-for="(myth, i) in myths" :key="i" class="myth-card">
+        <div v-for="(myth, i) in myths" :key="i" class="myth-card" :ref="(el) => setCardRef(i, el)">
           <div class="myth-card-title">{{ myth.title }}</div>
           <div class="myth-row">
             <div class="badge x">✗</div>
@@ -170,6 +247,22 @@ function showCopied(id) {
               @click="shareToLinkedIn(myth)"
             >
               In
+            </button>
+            <button
+              type="button"
+              class="share-btn share-btn-ig"
+              :title="copiedLabel === `share-ig-${i}` ? 'Done!' : 'Share card image to Instagram'"
+              @click="shareToInstagram(myth, i)"
+            >
+              {{ copiedLabel === `share-ig-${i}` ? 'OK' : 'IG' }}
+            </button>
+            <button
+              type="button"
+              class="share-btn share-btn-img"
+              :title="copiedLabel === `share-img-${i}` ? 'Done!' : 'Share as card image'"
+              @click="shareCardAsImage(myth, i)"
+            >
+              {{ copiedLabel === `share-img-${i}` ? 'Done!' : 'Image' }}
             </button>
             <button
               type="button"

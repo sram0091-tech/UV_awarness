@@ -672,6 +672,16 @@ nav {
   font-size: 11px;
 }
 
+.share-btn.share-btn-ig:hover {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.share-btn.share-btn-img {
+  width: auto;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
 /* About */
 .about-title {
   font-family: 'Source Serif 4', serif;
