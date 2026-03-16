@@ -291,7 +291,7 @@ function onUvApply() {
 
 const sectionNumber = computed(() => (activeTab.value === 'cancer' ? '01' : '02'))
 const sectionTitle = computed(() =>
-  activeTab.value === 'cancer' ? 'Skin Cancer Rate Dashboard' : 'Melbourne UV Dashboard'
+  activeTab.value === 'cancer' ? 'Cancer Dashboard' : 'UV Dashboard'
 )
 const sectionDesc = computed(() =>
   activeTab.value === 'cancer'
@@ -310,36 +310,38 @@ onMounted(async () => {
 
 <template>
   <div class="page-content">
-    <div class="sub-nav">
-      <button
-        type="button"
-        class="sub-nav-link"
-        :class="{ active: activeTab === 'cancer' }"
-        @click="activeTab = 'cancer'"
-      >
-        Cancer Dashboard
-      </button>
-
-      <button
-        type="button"
-        class="sub-nav-link"
-        :class="{ active: activeTab === 'uv' }"
-        @click="activeTab = 'uv'"
-      >
-        UV Dashboard
-      </button>
-    </div>
-
     <div class="dashboard-shell">
-      <div class="section-heading">
-        <span class="section-number">{{ sectionNumber }}</span>
-        <span class="section-dot"></span>
-        {{ sectionTitle }}
-      </div>
+      <div class="dashboard-header">
+        <div class="dashboard-tabs">
+          <button
+            type="button"
+            class="tab-btn"
+            :class="{ active: activeTab === 'cancer' }"
+            @click="activeTab = 'cancer'"
+          >
+            Cancer
+          </button>
 
-      <p class="section-desc">
-        {{ sectionDesc }}
-      </p>
+          <button
+            type="button"
+            class="tab-btn"
+            :class="{ active: activeTab === 'uv' }"
+            @click="activeTab = 'uv'"
+          >
+            UV
+          </button>
+        </div>
+
+        <div class="section-heading">
+          <span class="section-number">{{ sectionNumber }}</span>
+          <span class="section-dot"></span>
+          {{ sectionTitle }}
+        </div>
+
+        <p class="section-desc">
+          {{ sectionDesc }}
+        </p>
+      </div>
 
       <!-- CANCER -->
       <template v-if="activeTab === 'cancer'">
@@ -461,7 +463,7 @@ onMounted(async () => {
 
           <div class="uv-layout">
             <div>
-              <div class="chart-card" style="margin-bottom: 18px">
+              <div class="chart-card chart-gap">
                 <div class="chart-title">Daily UV Line Chart</div>
                 <UvDailyLineChart :data="dailyChartRows" />
               </div>
@@ -473,7 +475,7 @@ onMounted(async () => {
             </div>
 
             <div>
-              <div class="risk-card panel" style="margin-bottom: 18px">
+              <div class="risk-card panel chart-gap">
                 <h3>Risk Explanations</h3>
                 <div class="risk-list">
                   <div v-for="(item, i) in riskList" :key="i" class="risk-item">
@@ -515,30 +517,54 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.sub-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 22px;
+.dashboard-shell {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.sub-nav-link {
-  width: fit-content;
+.dashboard-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  margin-bottom: 18px;
+  background: #11131a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.tab-btn {
   border: 0;
   cursor: pointer;
-  text-decoration: none;
-  padding: 14px 24px;
-  border-radius: 18px;
+  padding: 12px 20px;
+  border-radius: 12px;
   font-weight: 700;
-  font-size: 1rem;
-  background: #e5e7eb;
-  color: #111;
+  font-size: 0.98rem;
+  background: transparent;
+  color: #d1d5db;
   transition: 0.2s ease;
 }
 
-.sub-nav-link.active {
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tab-btn.active {
   background: #facc15;
   color: #111;
+}
+
+.section-heading {
+  margin-bottom: 10px;
+}
+
+.section-desc {
+  max-width: 760px;
+  margin-bottom: 0;
 }
 
 .panel-spaced {
@@ -561,6 +587,10 @@ onMounted(async () => {
   margin-bottom: 0;
 }
 
+.chart-gap {
+  margin-bottom: 18px;
+}
+
 .insight-layout {
   margin-top: 20px;
   align-items: start;
@@ -577,6 +607,17 @@ onMounted(async () => {
 }
 
 @media (max-width: 900px) {
+  .dashboard-tabs {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
   .panel-spaced,
   .insight-column {
     gap: 16px;
@@ -584,6 +625,10 @@ onMounted(async () => {
 
   .insight-layout {
     margin-top: 16px;
+  }
+
+  .section-desc {
+    max-width: 100%;
   }
 }
 </style>
