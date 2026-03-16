@@ -44,7 +44,7 @@ export const defaultOptions = {
   scales: {
     x: {
       grid: { color: gridColor },
-      ticks: { color: textColor, maxRotation: 45 }
+      ticks: { color: textColor, maxRotation: 0 }
     },
     y: {
       grid: { color: gridColor },
