@@ -4,16 +4,13 @@ import SummaryCards from '../components/SummaryCards.vue'
 import FilterBar from '../components/FilterBar.vue'
 import InsightCard from '../components/InsightCard.vue'
 import CancerStateBarChart from '../components/charts/CancerStateBarChart.vue'
-import CancerTypeBarChart from '../components/charts/CancerTypeBarChart.vue'
 import CancerTrendLineChart from '../components/charts/CancerTrendLineChart.vue'
 import UvDailyLineChart from '../components/charts/UvDailyLineChart.vue'
 import UvYearlyLineChart from '../components/charts/UvYearlyLineChart.vue'
 import * as cancerApi from '../services/cancerApi.js'
 import * as uvApi from '../services/uvApi.js'
 
-const activeTab = ref('uv')
-
-/* -------------------- Shared helpers -------------------- */
+const activeTab = ref('cancer')
 
 function numberOrDash(value, digits = 2) {
   if (value === null || value === undefined || value === '') return '—'
@@ -46,19 +43,18 @@ function normalizeFilterList(value) {
 const cancerStatus = ref('Waiting to load cancer data…')
 const cancerStatusOk = ref(true)
 
-const cancerFilters = ref({ years: [], sexes: [], states: [], cancerTypes: [] })
+const cancerFilters = ref({ years: [], sexes: [], states: [] })
 const cancerYear = ref('')
 const cancerSex = ref('')
 const cancerState = ref('')
 
 const stateRates = ref([])
-const typeRates = ref([])
 const trend = ref([])
 const cancerSummary = ref(null)
 
 const cancerSummaryItems = ref([])
 const insightText = ref(
-  'Select filters to compare state-level rates, cancer type patterns, and the longer-term trend.'
+  'Use the filters to explore how cancer rates vary by state and across time.'
 )
 
 function setCancerStatus(text, ok) {
@@ -71,66 +67,59 @@ function setCancerSummaryItems() {
 
   if (!s) {
     cancerSummaryItems.value = [
-      { label: 'Average Rate 2001', value: '—' },
-      { label: 'Average Rate 2023', value: '—' },
-      { label: 'Highest Rate State', value: '—' },
-      { label: 'Highest Rate 2023', value: '—' },
-      { label: 'Rate Change %', value: '—' }
+      { label: 'Avg ASR (2001)', value: '—' },
+      { label: 'Avg ASR (2023)', value: '—' },
+      { label: 'Top State', value: '—' },
+      { label: 'Top ASR 2023', value: '—' },
+      { label: 'Change %', value: '—' }
     ]
     return
   }
 
   cancerSummaryItems.value = [
-    { label: 'Average Rate 2001', value: numberOrDash(s.averageRate2001) },
-    { label: 'Average Rate 2023', value: numberOrDash(s.averageRate2023) },
-    { label: 'Highest Rate State', value: s.highestRateState ?? '—' },
-    { label: 'Highest Rate 2023', value: numberOrDash(s.highestRate2023) },
-    { label: 'Rate Change %', value: percentOrDash(s.rateChangePercent) }
+    { label: 'Avg ASR (2001)', value: numberOrDash(s.averageRate2001) },
+    { label: 'Avg ASR (2023)', value: numberOrDash(s.averageRate2023) },
+    { label: 'Top State', value: s.highestRateState ?? '—' },
+    { label: 'Top ASR 2023', value: numberOrDash(s.highestRate2023) },
+    { label: 'Change %', value: percentOrDash(s.rateChangePercent) }
   ]
 }
 
 function buildCancerInsightText() {
-  if (!stateRates.value.length && !typeRates.value.length && !trend.value.length) {
+  if (!stateRates.value.length && !trend.value.length) {
     insightText.value = 'No cancer records were returned for the current filter combination.'
     return
   }
 
   const topState = stateRates.value[0]
-  const topType = [...typeRates.value]
-    .sort((a, b) => (Number(b.rate2023) || 0) - (Number(a.rate2023) || 0))[0]
-
   const trendStart = trend.value[0]
   const trendEnd = trend.value[trend.value.length - 1]
 
-  let trendSentence = 'The yearly trend is not available for the current selection.'
+  let trendSentence = 'A long-term trend is not available for the current selection.'
   if (trendStart && trendEnd) {
     const startRate = Number(trendStart.rate ?? trendStart.value ?? trendStart.averageRate ?? 0)
     const endRate = Number(trendEnd.rate ?? trendEnd.value ?? trendEnd.averageRate ?? 0)
 
     if (Number.isFinite(startRate) && Number.isFinite(endRate)) {
       if (endRate > startRate) {
-        trendSentence = `Across the available trend series, the rate increases from ${numberOrDash(startRate)} to ${numberOrDash(endRate)}.`
+        trendSentence = `The long-term trend rises from ${numberOrDash(startRate)} to ${numberOrDash(endRate)}.`
       } else if (endRate < startRate) {
-        trendSentence = `Across the available trend series, the rate declines from ${numberOrDash(startRate)} to ${numberOrDash(endRate)}.`
+        trendSentence = `The long-term trend falls from ${numberOrDash(startRate)} to ${numberOrDash(endRate)}.`
       } else {
-        trendSentence = `Across the available trend series, the rate remains stable at around ${numberOrDash(endRate)}.`
+        trendSentence = `The long-term trend stays broadly stable at around ${numberOrDash(endRate)}.`
       }
     }
   }
 
   const stateSentence = topState
-    ? `${topState.state} currently appears as the strongest state-level result, with a 2023 rate of ${numberOrDash(topState.rate2023)} compared with ${numberOrDash(topState.rate2001)} in 2001.`
+    ? `${topState.state} has the highest visible state rate, with ${numberOrDash(topState.rate2023)} in 2023 compared with ${numberOrDash(topState.rate2001)} in 2001.`
     : 'A leading state result is not available for the current selection.'
 
-  const typeSentence = topType
-    ? `${topType.cancer_type || topType.cancerType || 'The leading cancer type'} records the highest visible 2023 type-level rate at ${numberOrDash(topType.rate2023)}.`
-    : 'A leading cancer type result is not available for the current selection.'
-
   const summarySentence = cancerSummary.value?.highestRateState
-    ? `The summary endpoint also identifies ${cancerSummary.value.highestRateState} as the highest-rate state in 2023, at ${numberOrDash(cancerSummary.value.highestRate2023)}.`
+    ? `The summary also identifies ${cancerSummary.value.highestRateState} as the highest-rate state in 2023.`
     : 'A summary-level highest-rate state is not available for the current selection.'
 
-  insightText.value = `${stateSentence} ${typeSentence} ${trendSentence} ${summarySentence}`
+  insightText.value = `${stateSentence} ${trendSentence} ${summarySentence}`
 }
 
 async function loadCancerFilters() {
@@ -138,13 +127,12 @@ async function loadCancerFilters() {
   cancerFilters.value = {
     years: data.years || [],
     sexes: data.sexes || [],
-    states: (data.states || []).filter((s) => s !== 'Australia'),
-    cancerTypes: data.cancerTypes || data.cancer_types || []
+    states: (data.states || []).filter((s) => s !== 'Australia')
   }
 }
 
 async function loadCancerDashboard() {
-  setCancerStatus('Loading cancer endpoints…', true)
+  setCancerStatus('Loading cancer data…', true)
 
   try {
     if (!cancerFilters.value.years?.length) await loadCancerFilters()
@@ -155,9 +143,8 @@ async function loadCancerDashboard() {
       state: cancerState.value || undefined
     }
 
-    const [stateRatesRes, typeRatesRes, trendRes, summaryRes] = await Promise.all([
+    const [stateRatesRes, trendRes, summaryRes] = await Promise.all([
       cancerApi.getRateByState(params),
-      cancerApi.getRateByCancerType(params),
       cancerApi.getTrend(params),
       cancerApi.getSummary(params)
     ])
@@ -168,16 +155,15 @@ async function loadCancerDashboard() {
           .sort((a, b) => (Number(b.rate2023) || 0) - (Number(a.rate2023) || 0))
       : []
 
-    typeRates.value = Array.isArray(typeRatesRes) ? typeRatesRes : []
     trend.value = Array.isArray(trendRes) ? trendRes : []
     cancerSummary.value = summaryRes
 
     setCancerSummaryItems()
     buildCancerInsightText()
 
-    setCancerStatus('Cancer endpoints loaded successfully.', true)
+    setCancerStatus('Cancer data loaded successfully.', true)
   } catch (err) {
-    setCancerStatus(`Cancer API error: ${err.message}`, false)
+    setCancerStatus(`Unable to load cancer data: ${err.message}`, false)
   }
 }
 
@@ -196,8 +182,6 @@ const uvMonth = ref('')
 const uvSeason = ref('')
 
 const riskList = ref([])
-const uvSummary = ref(null)
-
 const uvSummaryItems = ref([
   { label: 'Max UV', value: '—' },
   { label: 'Average UV', value: '—' },
@@ -223,7 +207,7 @@ async function loadUvFilters() {
 }
 
 async function loadUvDashboard() {
-  setUvStatus('Loading UV endpoints…', true)
+  setUvStatus('Loading UV data…', true)
 
   try {
     const params = {
@@ -243,7 +227,6 @@ async function loadUvDashboard() {
     ])
 
     riskList.value = Array.isArray(riskRes) ? riskRes : []
-    uvSummary.value = summaryRes
 
     const daily = Array.isArray(dailyRes) ? dailyRes : []
     const yearly = Array.isArray(yearlyRes) ? yearlyRes : []
@@ -277,9 +260,9 @@ async function loadUvDashboard() {
       uvCategory: row.uvCategory ?? row.uv_category ?? '—'
     }))
 
-    setUvStatus('UV endpoints loaded successfully.', true)
+    setUvStatus('UV data loaded successfully.', true)
   } catch (err) {
-    setUvStatus(`UV API error: ${err.message}`, false)
+    setUvStatus(`Unable to load UV data: ${err.message}`, false)
   }
 }
 
@@ -295,8 +278,8 @@ const sectionTitle = computed(() =>
 )
 const sectionDesc = computed(() =>
   activeTab.value === 'cancer'
-    ? 'Explore state-level cancer rates, cancer-type differences, and year-by-year trend patterns using the connected back-end cancer API endpoints.'
-    : 'This page is connected to your UV APIs: filters, yearly-line-chart, daily-line-chart, risk-explanations, and summary.'
+    ? 'Compare age-standardised cancer rates across Australian states and see how they change over time.'
+    : 'Explore Melbourne UV levels, risk categories, and trends across days and seasons.'
 )
 
 onMounted(async () => {
@@ -309,7 +292,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="page-content">
+  <div class="page-content dashboard-page">
     <div class="dashboard-shell">
       <div class="dashboard-header">
         <div class="dashboard-tabs">
@@ -345,8 +328,8 @@ onMounted(async () => {
 
       <!-- CANCER -->
       <template v-if="activeTab === 'cancer'">
-        <div class="status-bar">
-          <div :class="['status', cancerStatusOk ? 'ok' : 'err']">{{ cancerStatus }}</div>
+        <div v-if="!cancerStatusOk" class="status-bar">
+          <div class="status err">{{ cancerStatus }}</div>
         </div>
 
         <div class="panel panel-spaced">
@@ -376,20 +359,25 @@ onMounted(async () => {
             </div>
           </FilterBar>
 
+          <div class="info-note">
+            <strong>How to read this dashboard:</strong>
+            Rate 2001 means the age-standardised rate based on the 2001 Australian Standard Population
+            (per 100,000). Rate 2023 means the age-standardised rate based on the 2023 Australian population
+            (per 100,000).
+          </div>
+
           <SummaryCards :items="cancerSummaryItems" />
 
-          <div class="chart-grid-2 balanced-grid">
-            <div class="chart-card">
-              <div class="chart-title">Rate by State</div>
-              <p class="chart-subtitle">States are ordered by highest 2023 rate.</p>
-              <CancerStateBarChart :data="stateRates" />
-            </div>
+          <div class="insight-card-wrap">
+            <InsightCard title="Key Insight" :content="insightText" />
+          </div>
 
-            <div class="chart-card">
-              <div class="chart-title">Rate by Cancer Type</div>
-              <p class="chart-subtitle">Compare rate differences across cancer categories.</p>
-              <CancerTypeBarChart :data="typeRates" />
-            </div>
+          <div class="chart-card">
+            <div class="chart-title">Rate by State</div>
+            <p class="chart-subtitle">
+              Compares age-standardised rates by state for 2001 and 2023, ordered by highest 2023 value.
+            </p>
+            <CancerStateBarChart :data="stateRates" />
           </div>
 
           <div class="chart-card chart-card-lg">
@@ -398,39 +386,12 @@ onMounted(async () => {
             <CancerTrendLineChart :data="trend" />
           </div>
         </div>
-
-        <div class="dashboard-grid insight-layout">
-          <div class="table-card">
-            <div class="chart-title">State Data Table</div>
-            <table>
-              <thead>
-                <tr>
-                  <th>State</th>
-                  <th>Rate 2001</th>
-                  <th>Rate 2023</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(row, i) in stateRates" :key="i">
-                  <td>{{ row.state ?? '' }}</td>
-                  <td>{{ numberOrDash(row.rate2001) }}</td>
-                  <td>{{ numberOrDash(row.rate2023) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="insight-column">
-            <InsightCard title="Live Insights" :content="insightText" />
-          </div>
-        </div>
       </template>
 
       <!-- UV -->
       <template v-else>
-        <div class="status-bar">
-          <div :class="['status', uvStatusOk ? 'ok' : 'err']">{{ uvStatus }}</div>
-          <button type="button" class="apply-btn" @click="onUvApply">Refresh UV data</button>
+        <div v-if="!uvStatusOk" class="status-bar">
+          <div class="status err">{{ uvStatus }}</div>
         </div>
 
         <div class="panel">
@@ -517,13 +478,17 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.dashboard-page {
+  padding-top: 24px;
+}
+
 .dashboard-shell {
   max-width: 1400px;
   margin: 0 auto;
 }
 
 .dashboard-header {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .dashboard-tabs {
@@ -531,7 +496,7 @@ onMounted(async () => {
   align-items: center;
   gap: 10px;
   padding: 6px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   background: #11131a;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
@@ -559,21 +524,17 @@ onMounted(async () => {
 }
 
 .section-heading {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .section-desc {
   max-width: 760px;
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .panel-spaced {
   display: grid;
   gap: 20px;
-}
-
-.balanced-grid {
-  align-items: stretch;
 }
 
 .chart-subtitle {
@@ -591,15 +552,23 @@ onMounted(async () => {
   margin-bottom: 18px;
 }
 
+.info-note {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(250, 204, 21, 0.08);
+  border: 1px solid rgba(250, 204, 21, 0.18);
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.insight-card-wrap {
+  margin-top: -4px;
+}
+
 .insight-layout {
   margin-top: 20px;
   align-items: start;
-}
-
-.insight-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 .table-card table tbody tr:hover {
@@ -618,8 +587,7 @@ onMounted(async () => {
     text-align: center;
   }
 
-  .panel-spaced,
-  .insight-column {
+  .panel-spaced {
     gap: 16px;
   }
 
