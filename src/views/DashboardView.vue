@@ -467,13 +467,13 @@ onMounted(async () => {
           </div>
 
           <div class="insight-card-wrap">
-  <div class="insight-title">Understanding the rates</div>
-  <div class="insight-text">
-    The cancer rates shown in this dashboard are age-standardised so that states and years
+  <InsightCard
+    title="Understanding the rates"
+    content="The cancer rates shown in this dashboard are age-standardised so that states and years
     can be compared fairly. “Rate 2001” uses the age structure of the Australian population
     in 2001 as the reference population, while “Rate 2023” uses the 2023 population structure.
-    All values represent cases per 100,000 people.
-  </div>
+    All values represent cases per 100,000 people."
+  />
 </div>
 
           <div class="chart-card chart-card-lg">
