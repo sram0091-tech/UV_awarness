@@ -515,10 +515,9 @@ onMounted(async () => {
       </div>
 
       <div class="filter-actions">
-        <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
-        <button type="button" class="clear-btn" @click="clearUvFilters">Clear</button>
-      </div>
-    </div>
+  <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
+  <button type="button" class="apply-btn clear-btn" @click="clearUvFilters">Clear</button>
+</div>
 
     <div class="filter-helper">
   Select either a month or a season. Choosing one will clear the other.
@@ -536,10 +535,9 @@ onMounted(async () => {
           <UvYearlyLineChart :data="yearlyChartRows" />
         </div>
 
-        <div class="insight-card-lite">
-          <div class="chart-title">Live Insight</div>
-          <p class="insight-text">{{ uvInsightText }}</p>
-        </div>
+        <div class="insight-card-wrap">
+          <InsightCard title="Live Insight"
+          content="uvInsightText"/>
       </div>
 
       <div class="right-column">
