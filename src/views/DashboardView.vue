@@ -481,8 +481,6 @@ onMounted(async () => {
             <p class="chart-subtitle">Track how the selected rate changes across time.</p>
             <CancerTrendLineChart :data="trend" />
           </div>
-        </div>
-        </div>
       </template>
 
       
