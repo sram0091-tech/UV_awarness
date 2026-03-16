@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import SummaryCards from '../components/SummaryCards.vue'
+import FilterBar from '../components/FilterBar.vue'
 import InsightCard from '../components/InsightCard.vue'
 import CancerStateBarChart from '../components/charts/CancerStateBarChart.vue'
 import CancerTrendLineChart from '../components/charts/CancerTrendLineChart.vue'
@@ -449,7 +450,9 @@ onMounted(async () => {
             (per 100,000).
           </div>
 
-          <SummaryCards :items="cancerSummaryItems" />
+          <div class="cancer-summary-wrap">
+  <SummaryCards :items="cancerSummaryItems" />
+</div>
 
           <div class="insight-card-wrap">
             <InsightCard title="Key Insight" :content="insightText" />
@@ -703,6 +706,36 @@ onMounted(async () => {
   color: #fef08a;
   font-size: 0.92rem;
   font-weight: 600;
+}
+
+.cancer-summary-wrap :deep(.summary-grid) {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.cancer-summary-wrap :deep(.summary-card) {
+  min-width: 0;
+}
+
+.cancer-summary-wrap :deep(.summary-label) {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f3f4f6;
+  letter-spacing: 0.01em;
+}
+
+.cancer-summary-wrap :deep(.summary-value) {
+  font-size: clamp(1.15rem, 2vw, 1.65rem);
+  line-height: 1.08;
+  font-weight: 700;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .cancer-summary-wrap :deep(.summary-grid) {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 
