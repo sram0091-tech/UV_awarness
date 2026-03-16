@@ -466,15 +466,13 @@ onMounted(async () => {
             <CancerStateBarChart :data="stateRates" />
           </div>
 
-          <div class="dashboard-footnote dashboard-footnote-info">
-  <span class="footnote-icon">i</span>
-  <div class="footnote-text">
-    <strong>About these rates</strong>
-    <div>
-      The cancer rates are age-standardised so different states and years can be compared fairly.
-      Rate 2001 uses the age structure of the Australian population in 2001, while Rate 2023 uses
-      the 2023 population structure. All values are shown per 100,000 people.
-    </div>
+          <div class="insight-card">
+  <div class="insight-title">Understanding the rates</div>
+  <div class="insight-text">
+    The cancer rates shown in this dashboard are age-standardised so that states and years
+    can be compared fairly. “Rate 2001” uses the age structure of the Australian population
+    in 2001 as the reference population, while “Rate 2023” uses the 2023 population structure.
+    All values represent cases per 100,000 people.
   </div>
 </div>
 
