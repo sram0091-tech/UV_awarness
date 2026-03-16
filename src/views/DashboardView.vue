@@ -375,198 +375,151 @@ onMounted(async () => {
 })
 </script>
 
-<template>
-  <div class="page-content dashboard-page">
-    <div class="dashboard-shell">
-      <div class="dashboard-header">
-        <div class="dashboard-tabs">
-          <button
-            type="button"
-            class="tab-btn"
-            :class="{ active: activeTab === 'cancer' }"
-            @click="activeTab = 'cancer'"
-          >
-            Cancer
-          </button>
+<template v-if="activeTab === 'cancer'">
+  <div v-if="!cancerStatusOk" class="status-bar">
+    <div class="status err">{{ cancerStatus }}</div>
+  </div>
 
-          <button
-            type="button"
-            class="tab-btn"
-            :class="{ active: activeTab === 'uv' }"
-            @click="activeTab = 'uv'"
-          >
-            UV
-          </button>
-        </div>
-
-        <div class="section-heading">
-          <span class="section-number">{{ sectionNumber }}</span>
-          <span class="section-dot"></span>
-          {{ sectionTitle }}
-        </div>
-
-        <p class="section-desc">
-          {{ sectionDesc }}
-        </p>
+  <div class="panel panel-spaced">
+    <FilterBar @apply="onCancerApply">
+      <div class="filter-group">
+        <label for="cancerYear">Year</label>
+        <select id="cancerYear" v-model="cancerYear">
+          <option value="">All</option>
+          <option v-for="y in cancerFilters.years" :key="y" :value="y">{{ y }}</option>
+        </select>
       </div>
 
-      <!-- CANCER -->
-      <template v-if="activeTab === 'cancer'">
-        <div v-if="!cancerStatusOk" class="status-bar">
-          <div class="status err">{{ cancerStatus }}</div>
+      <div class="filter-group">
+        <label for="cancerSex">Sex</label>
+        <select id="cancerSex" v-model="cancerSex">
+          <option value="">All</option>
+          <option v-for="s in cancerFilters.sexes" :key="s" :value="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="cancerState">State</label>
+        <select id="cancerState" v-model="cancerState">
+          <option value="">All</option>
+          <option v-for="st in cancerFilters.states" :key="st" :value="st">{{ st }}</option>
+        </select>
+      </div>
+    </FilterBar>
+
+    <div class="info-note">
+      <strong>How to read this dashboard:</strong>
+      Rate 2001 means the age-standardised rate based on the 2001 Australian Standard Population
+      (per 100,000). Rate 2023 means the age-standardised rate based on the 2023 Australian population
+      (per 100,000).
+    </div>
+
+    <div class="cancer-summary-wrap">
+      <SummaryCards :items="cancerSummaryItems" />
+    </div>
+
+    <div class="insight-card-wrap">
+      <InsightCard title="Key Insight" :content="insightText" />
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Rate by State</div>
+      <p class="chart-subtitle">
+        Compares age-standardised rates by state for 2001 and 2023, ordered by highest 2023 value.
+      </p>
+      <CancerStateBarChart :data="stateRates" />
+    </div>
+
+    <div class="insight-card-wrap">
+      <InsightCard
+        title="Understanding the rates"
+        content="The cancer rates shown in this dashboard are age-standardised so that states and years can be compared fairly. Rate 2001 uses the age structure of the Australian population in 2001 as the reference population, while Rate 2023 uses the 2023 population structure. All values represent cases per 100,000 people."
+      />
+    </div>
+
+    <div class="chart-card chart-card-lg">
+      <div class="chart-title">Yearly Trend</div>
+      <p class="chart-subtitle">Track how the selected rate changes across time.</p>
+      <CancerTrendLineChart :data="trend" />
+    </div>
+  </div>
+</template>
+      
+      <!-- UV -->
+
+
+      <template v-else>
+        <div v-if="!uvStatusOk" class="status-bar">
+          <div class="status err">{{ uvStatus }}</div>
+        </div>
+
+        <div class="info-note">
+          <strong>How to read this dashboard:</strong>
+          {{ uvHowToReadText }}
         </div>
 
         <div class="panel panel-spaced">
-          <FilterBar @apply="onCancerApply">
+          <div class="filter-row uv-filter-row">
             <div class="filter-group">
-              <label for="cancerYear">Year</label>
-              <select id="cancerYear" v-model="cancerYear">
+              <label for="uvMonth">Month</label>
+              <select id="uvMonth" v-model="uvMonth">
                 <option value="">All</option>
-                <option v-for="y in cancerFilters.years" :key="y" :value="y">{{ y }}</option>
+                <option v-for="m in uvFilters.months" :key="m" :value="m">{{ m }}</option>
               </select>
             </div>
 
             <div class="filter-group">
-              <label for="cancerSex">Sex</label>
-              <select id="cancerSex" v-model="cancerSex">
+              <label for="uvSeason">Season</label>
+              <select id="uvSeason" v-model="uvSeason">
                 <option value="">All</option>
-                <option v-for="s in cancerFilters.sexes" :key="s" :value="s">{{ s }}</option>
+                <option v-for="s in uvFilters.seasons" :key="s" :value="s">{{ s }}</option>
               </select>
             </div>
 
-            <div class="filter-group">
-              <label for="cancerState">State</label>
-              <select id="cancerState" v-model="cancerState">
-                <option value="">All</option>
-                <option v-for="st in cancerFilters.states" :key="st" :value="st">{{ st }}</option>
-              </select>
+            <div class="filter-actions">
+              <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
+              <button type="button" class="apply-btn clear-btn" @click="clearUvFilters">Clear</button>
             </div>
-          </FilterBar>
 
-          <div class="info-note">
-            <strong>How to read this dashboard:</strong>
-            Rate 2001 means the age-standardised rate based on the 2001 Australian Standard Population
-            (per 100,000). Rate 2023 means the age-standardised rate based on the 2023 Australian population
-            (per 100,000).
+            <div class="filter-helper">
+              Select either a month or a season. Choosing one will clear the other.
+            </div>
           </div>
 
-          <div class="cancer-summary-wrap">
-  <SummaryCards :items="cancerSummaryItems" />
-</div>
+          <SummaryCards :items="uvSummaryItems" :columns="3" />
 
-          <div class="insight-card-wrap">
-            <InsightCard title="Key Insight" :content="insightText" />
+          <div class="uv-main-grid">
+            <div class="uv-chart-panel chart-card">
+              <div class="chart-title">UV Trend Chart</div>
+              <p class="chart-subtitle">
+                Compare average UV and maximum UV across the selected time range.
+              </p>
+              <UvYearlyLineChart :data="yearlyChartRows" />
+            </div>
+
+            <div class="uv-insight-panel">
+              <InsightCard
+                title="Live Insight"
+                :content="uvInsightText"
+              />
+            </div>
           </div>
 
-          <div class="chart-card">
-            <div class="chart-title">Rate by State</div>
-            <p class="chart-subtitle">
-              Compares age-standardised rates by state for 2001 and 2023, ordered by highest 2023 value.
-            </p>
-            <CancerStateBarChart :data="stateRates" />
+          <div class="uv-risk-panel">
+            <RiskLegend
+              title="UV Risk Guide"
+              :items="riskLegendItems"
+            />
           </div>
-
-          <div class="insight-card-wrap">
-  <InsightCard
-    title="Understanding the rates"
-    content="The cancer rates shown in this dashboard are age-standardised so that states and years
-    can be compared fairly. “Rate 2001” uses the age structure of the Australian population
-    in 2001 as the reference population, while “Rate 2023” uses the 2023 population structure.
-    All values represent cases per 100,000 people."
-  />
-</div>
-
-          <div class="chart-card chart-card-lg">
-            <div class="chart-title">Yearly Trend</div>
-            <p class="chart-subtitle">Track how the selected rate changes across time.</p>
-            <CancerTrendLineChart :data="trend" />
-          </div>
-      </template>
-
-      
-      <!-- UV -->
-<template v-else>
-  <div v-if="!uvStatusOk" class="status-bar">
-    <div class="status err">{{ uvStatus }}</div>
-  </div>
-
-  <div class="info-note">
-  <strong>How to read this dashboard:</strong>
-  {{ uvHowToReadText }}
-</div>
-
-  <div class="panel panel-spaced">
-    <div class="filter-row uv-filter-row">
-      <div class="filter-group">
-        <label for="uvMonth">Month</label>
-        <select id="uvMonth" v-model="uvMonth">
-          <option value="">All</option>
-          <option v-for="m in uvFilters.months" :key="m" :value="m">{{ m }}</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="uvSeason">Season</label>
-        <select id="uvSeason" v-model="uvSeason">
-          <option value="">All</option>
-          <option v-for="s in uvFilters.seasons" :key="s" :value="s">{{ s }}</option>
-        </select>
-      </div>
-
-      <div class="filter-actions">
-  <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
-  <button type="button" class="apply-btn clear-btn" @click="clearUvFilters">Clear</button>
-</div>
-
-    <div class="filter-helper">
-  Select either a month or a season. Choosing one will clear the other.
-</div>
-
-    <SummaryCards :items="uvSummaryItems" :columns="3" />
-
-    <div class="uv-layout">
-      <div class="uv-main-grid">
-  <div class="uv-chart-panel chart-card">
-    <div class="chart-title">UV Trend Chart</div>
-    <p class="chart-subtitle">
-      Compare average UV and maximum UV across the selected time range.
-    </p>
-    <UvYearlyLineChart :data="yearlyChartRows" />
-  </div>
-
-  <div class="uv-insight-panel">
-    <InsightCard
-      title="Live Insight"
-      :content="uvInsightText"
-    />
-  </div>
-</div>
-
-<div class="uv-risk-panel">
-  <RiskLegend
-    title="UV Risk Guide"
-    :items="riskLegendItems"
-  />
-</div>
-
-          <RiskLegend
-            title="Protection guidance by UV category"
-            :items="riskLegendItems"
-          />
         </div>
-      </div>
-    </div>
-  </div>
-</template>
-    </div>
-  </div>
-</template>
+      </template>
+  
+
 
 <style scoped>
 .dashboard-page {
   padding-top: 24px;
 }
-
 
 .dashboard-header {
   margin-bottom: 18px;
@@ -629,10 +582,6 @@ onMounted(async () => {
   margin-bottom: 0;
 }
 
-.chart-gap {
-  margin-bottom: 18px;
-}
-
 .info-note {
   padding: 14px 16px;
   border-radius: 14px;
@@ -647,49 +596,7 @@ onMounted(async () => {
   margin-top: -4px;
 }
 
-.insight-layout {
-  margin-top: 20px;
-  align-items: start;
-}
-
-.table-card table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-@media (max-width: 900px) {
-  .dashboard-tabs {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .tab-btn {
-    flex: 1 1 auto;
-    text-align: center;
-  }
-
-  .panel-spaced {
-    gap: 16px;
-  }
-
-  .insight-layout {
-    margin-top: 16px;
-  }
-
-  .section-desc {
-    max-width: 100%;
-  }
-
-  .how-grid,
-  .uv-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-actions {
-    width: 100%;
-  }
-
-  .filter-helper {
+.filter-helper {
   grid-column: 1 / -1;
   margin-top: 2px;
   color: #9ca3af;
@@ -697,23 +604,9 @@ onMounted(async () => {
   line-height: 1.45;
 }
 
-.risk-header {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.risk-badge {
-  display: inline-flex;
-  width: fit-content;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(250, 204, 21, 0.14);
-  border: 1px solid rgba(250, 204, 21, 0.25);
-  color: #fef08a;
-  font-size: 0.92rem;
-  font-weight: 600;
+.clear-btn {
+  background: #facc15;
+  color: #111;
 }
 
 .cancer-summary-wrap :deep(.summary-grid) {
@@ -738,53 +631,6 @@ onMounted(async () => {
   font-weight: 700;
   word-break: break-word;
   overflow-wrap: anywhere;
-}
-
-@media (max-width: 900px) {
-  .cancer-summary-wrap :deep(.summary-grid) {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-.dashboard-footnote {
-  margin-top: 22px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.dashboard-footnote-info {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.footnote-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 22px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #111;
-  background: #facc15;
-  margin-top: 2px;
-}
-
-.footnote-text {
-  color: #cbd5e1;
-  font-size: 0.92rem;
-  line-height: 1.55;
-}
-
-.footnote-text strong {
-  display: block;
-  margin-bottom: 4px;
-  color: #f8fafc;
 }
 
 .uv-main-grid {
@@ -813,6 +659,25 @@ onMounted(async () => {
 }
 
 @media (max-width: 900px) {
+  .dashboard-tabs {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .panel-spaced {
+    gap: 16px;
+  }
+
+  .section-desc {
+    max-width: 100%;
+  }
+
   .uv-main-grid {
     grid-template-columns: 1fr;
   }
@@ -820,7 +685,13 @@ onMounted(async () => {
   .uv-risk-panel {
     margin-top: 16px;
   }
-}
 
+  .filter-actions {
+    width: 100%;
+  }
+
+  .cancer-summary-wrap :deep(.summary-grid) {
+    grid-template-columns: 1fr !important;
+  }
 }
-</style> 
+</style>
