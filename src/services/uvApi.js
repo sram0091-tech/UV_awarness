@@ -4,10 +4,6 @@ export async function getFilters() {
   return apiGet('/api/uv/filters')
 }
 
-export async function getDailyLineChart(params = {}) {
-  return apiGet('/api/uv/daily-line-chart', params).catch(() => [])
-}
-
 export async function getYearlyLineChart(params = {}) {
   return apiGet('/api/uv/yearly-line-chart', params).catch(() => [])
 }
