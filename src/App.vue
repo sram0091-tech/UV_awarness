@@ -6,5 +6,7 @@ import TitleBlock from './components/TitleBlock.vue'
 <template>
   <Navbar />
   <TitleBlock />
-  <router-view />
+  <main class="page-container">
+    <router-view />
+  </main>
 </template>

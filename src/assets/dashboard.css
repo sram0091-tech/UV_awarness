@@ -33,12 +33,19 @@ body {
   overflow-x: hidden;
 }
 
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 88px 40px 40px;
+  box-sizing: border-box;
+}
+
 .page-content,
 .hero-wrap,
 .dashboard-shell,
 .myths-wrap,
 .about-wrap {
-  padding-top: 88px;
+  padding-top: 0;
   box-sizing: border-box;
 }
 
@@ -133,26 +140,18 @@ nav {
   color: var(--muted);
 }
 
-/* Reserve right margin so page content doesn’t sit under the title block */
-@media (min-width: 861px) {
-  .page-content,
-  .hero-wrap,
-  .dashboard-shell,
-  .myths-wrap,
-  .about-wrap {
-    padding-right: 280px;
-  }
-}
+/* Title block is position:fixed and overlays the right side; no padding reserved so it does not shrink the main container. */
 
-/* Home hero */
+/* Home hero – centered within page-container */
 .home-hero {
-  min-height: 100vh;
-  padding: 100px 48px 50px;
+  min-height: 80vh;
+  padding: 40px 0 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  width: 100%;
 }
 
 .home-hero h2 {
@@ -161,6 +160,7 @@ nav {
   line-height: 1.2;
   margin-bottom: 26px;
   max-width: 900px;
+  width: 100%;
 }
 
 .home-image-strip {
@@ -763,6 +763,9 @@ nav {
   .title-block {
     display: none;
   }
+  .page-container {
+    padding: 88px 20px 24px;
+  }
   nav {
     padding: 14px 16px;
   }
@@ -776,7 +779,11 @@ nav {
     padding: 18px 16px 28px;
   }
   .hero-wrap {
-    padding-top: 70px;
+    padding-top: 0;
+  }
+  .home-hero {
+    min-height: auto;
+    padding: 24px 0 40px;
   }
   .filter-row {
     grid-template-columns: 1fr 1fr;
