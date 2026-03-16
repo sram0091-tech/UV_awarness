@@ -325,9 +325,9 @@ function showCopied(id) {
 .section-heading {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 24px;
-  font-size: 20px;
+  gap: 12px;
+  margin-bottom: 32px;
+  font-size: clamp(26px, 3.2vw, 36px);
   font-weight: 700;
   color: #f5f5f5;
 }
@@ -335,26 +335,28 @@ function showCopied(id) {
 .section-number {
   color: #f7c948;
   font-weight: 800;
+  font-size: 1em;
 }
 
 .section-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background: #f7c948;
   border-radius: 50%;
 }
 
 .myths-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 28px;
 }
 
 .myth-card {
   background: #232323;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 22px;
-  padding: 24px;
+  padding: 32px;
+  min-height: 380px;
   color: #f1f1f1;
   box-sizing: border-box;
   cursor: pointer;
@@ -372,32 +374,33 @@ function showCopied(id) {
 }
 
 .myth-card-title {
-  font-size: 24px;
+  font-size: clamp(22px, 2.2vw, 30px);
   font-weight: 700;
-  margin-bottom: 18px;
-  line-height: 1.3;
+  margin-bottom: 22px;
+  line-height: 1.35;
 }
 
 .myth-row {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: flex-start;
-  margin-bottom: 16px;
-  line-height: 1.7;
-  font-size: 17px;
+  margin-bottom: 20px;
+  line-height: 1.75;
+  font-size: clamp(17px, 1.8vw, 21px);
 }
 
 .myth-only {
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .badge {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -413,40 +416,37 @@ function showCopied(id) {
 }
 
 .myth-prompt {
-  margin-top: 14px;
+  margin-top: 18px;
   color: #f7c948;
-  font-size: 14px;
+  font-size: clamp(16px, 1.5vw, 19px);
   font-weight: 700;
   letter-spacing: 0.2px;
 }
 
 .myth-reveal {
-  margin-top: 18px;
-  padding-top: 18px;
+  margin-top: 22px;
+  padding-top: 22px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.myth-citation{
-  margin-top:18px;
-  padding:14px 16px;
-  border-radius:12px;
-
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.06);
-
-  font-size:14px;
-  line-height:1.5;
+.myth-citation {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.55;
 }
 
-.citation-label{
-  display:block;
-  font-weight:600;
-  font-size:12px;
-  letter-spacing:0.04em;
-  text-transform:uppercase;
-
-  color:#9ca3af;
-  margin-bottom:4px;
+.citation-label {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 6px;
 }
 
 .citation-link{
@@ -461,16 +461,16 @@ function showCopied(id) {
 .myth-share {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .myth-share-label {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #d8d8d8;
-  margin-right: 2px;
+  margin-right: 4px;
 }
 
 .share-btn {
@@ -478,8 +478,8 @@ function showCopied(id) {
   background: #2d2d2d;
   color: #f3f3f3;
   border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 14px;
+  padding: 10px 16px;
+  font-size: 15px;
   cursor: pointer;
   transition: 0.2s ease;
 }
@@ -496,15 +496,25 @@ function showCopied(id) {
 
 @media (max-width: 768px) {
   .myth-card {
-    padding: 20px;
+    padding: 26px;
+    min-height: 340px;
   }
 
   .myth-card-title {
-    font-size: 21px;
+    font-size: 24px;
   }
 
   .myth-row {
-    font-size: 16px;
+    font-size: 18px;
+  }
+
+  .myth-prompt {
+    font-size: 17px;
+  }
+
+  .myth-citation {
+    font-size: 15px;
+    padding: 16px 18px;
   }
 }
 </style>
