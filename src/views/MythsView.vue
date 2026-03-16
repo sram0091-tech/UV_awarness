@@ -23,6 +23,13 @@ const myths = [
     right: 'Tanning is a biological response to DNA damage caused by ultraviolet radiation. It is a sign of skin injury, not health.',
     citationLabel: 'Cancer Council Australia – Sun safety and sunscreen guidance',
     citationUrl: 'https://www.cancer.org.au/cancer-information/causes-and-prevention/sun-safety/sunscreen'
+  },
+  {
+    title: '🧴 Myth 4: Base tan protects you',
+    wrong: '"Getting a base tan before holiday prevents sunburn."',
+    right: 'A base tan provides only minimal protection (about SPF 3–4) and still involves UV damage to the skin. It does not replace sunscreen or other sun protection.',
+    citationLabel: 'Skin Cancer Foundation – The truth about base tans',
+    citationUrl: 'https://www.skincancer.org/blog/the-science-of-sunburn/'
   }
 ]
 
