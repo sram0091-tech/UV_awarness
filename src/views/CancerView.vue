@@ -34,7 +34,7 @@ function numberOrDash(value, digits = 2) {
   return Number.isFinite(n) ? n.toFixed(digits) : String(value)
 }
 
-function percentOrDash(value) {
+function percentOrDash(value, digits = 2) {
   if (value === null || value === undefined || value === '') return '—'
   const n = Number(value)
   return Number.isFinite(n) ? `${n.toFixed(digits = 2)}%` : String(value)
