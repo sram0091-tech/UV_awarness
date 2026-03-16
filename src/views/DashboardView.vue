@@ -466,7 +466,7 @@ onMounted(async () => {
             <CancerStateBarChart :data="stateRates" />
           </div>
 
-          <div class="insight-card">
+          <div class="insight-card-wrap">
   <div class="insight-title">Understanding the rates</div>
   <div class="insight-text">
     The cancer rates shown in this dashboard are age-standardised so that states and years
