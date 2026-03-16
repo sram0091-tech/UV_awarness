@@ -29,7 +29,21 @@ const myths = [
     wrong: '"Getting a base tan before holiday prevents sunburn."',
     right: 'A base tan provides only minimal protection (about SPF 3–4) and still involves UV damage to the skin. It does not replace sunscreen or other sun protection.',
     citationLabel: 'Skin Cancer Foundation – The truth about base tans',
-    citationUrl: 'https://www.skincancer.org/blog/the-science-of-sunburn/'
+    citationUrl: 'https://www.skincancer.org/risk-factors/tanning/'
+  },
+  {
+    title: '🌍 Myth 5: Dark skin doesn’t need protection',
+    wrong: '"People with darker skin don’t get skin cancer or sun damage."',
+    right: 'While melanin offers some protection, UV still damages all skin types. Skin cancer and sun damage can affect everyone; detection may be later in skin of color.',
+    citationLabel: 'Skin Cancer Foundation – Skin cancer in skin of color',
+    citationUrl: 'https://www.skincancer.org/skin-cancer-information/skin-cancer-skin-of-color/'
+  },
+  {
+    title: '🪟 Myth 6: You’re safe behind glass',
+    wrong: '"Sitting by a window or in a car protects you from UV."',
+    right: 'UVA rays pass through glass and can still reach your skin, causing aging and increasing cancer risk. Sun protection matters indoors near windows too.',
+    citationLabel: 'WHO – UV radiation and the skin',
+    citationUrl: 'https://www.who.int/news-room/questions-and-answers/item/radiation-ultraviolet-(uv)'
   }
 ]
 
@@ -354,16 +368,16 @@ function showCopied(id) {
 
 .myths-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px;
 }
 
 .myth-card {
   background: #232323;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 22px;
-  padding: 32px;
-  min-height: 380px;
+  border-radius: 20px;
+  padding: 26px;
+  min-height: 320px;
   color: #f1f1f1;
   box-sizing: border-box;
   cursor: pointer;
@@ -381,33 +395,33 @@ function showCopied(id) {
 }
 
 .myth-card-title {
-  font-size: clamp(22px, 2.2vw, 30px);
+  font-size: clamp(20px, 2vw, 26px);
   font-weight: 700;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
   line-height: 1.35;
 }
 
 .myth-row {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-start;
-  margin-bottom: 20px;
-  line-height: 1.75;
-  font-size: clamp(17px, 1.8vw, 21px);
+  margin-bottom: 14px;
+  line-height: 1.65;
+  font-size: clamp(15px, 1.6vw, 18px);
 }
 
 .myth-only {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .badge {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -423,37 +437,37 @@ function showCopied(id) {
 }
 
 .myth-prompt {
-  margin-top: 18px;
+  margin-top: 14px;
   color: #f7c948;
-  font-size: clamp(16px, 1.5vw, 19px);
+  font-size: clamp(14px, 1.4vw, 17px);
   font-weight: 700;
   letter-spacing: 0.2px;
 }
 
 .myth-reveal {
-  margin-top: 22px;
-  padding-top: 22px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .myth-citation {
-  margin-top: 22px;
-  padding: 18px 20px;
-  border-radius: 12px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: clamp(15px, 1.4vw, 17px);
-  line-height: 1.55;
+  font-size: clamp(13px, 1.3vw, 15px);
+  line-height: 1.5;
 }
 
 .citation-label {
   display: block;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #9ca3af;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .citation-link{
@@ -468,16 +482,16 @@ function showCopied(id) {
 .myth-share {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 
 .myth-share-label {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: #d8d8d8;
-  margin-right: 4px;
+  margin-right: 2px;
 }
 
 .share-btn {
@@ -485,8 +499,8 @@ function showCopied(id) {
   background: #2d2d2d;
   color: #f3f3f3;
   border-radius: 999px;
-  padding: 10px 16px;
-  font-size: 15px;
+  padding: 8px 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: 0.2s ease;
 }
@@ -503,25 +517,25 @@ function showCopied(id) {
 
 @media (max-width: 768px) {
   .myth-card {
-    padding: 26px;
-    min-height: 340px;
+    padding: 22px;
+    min-height: 280px;
   }
 
   .myth-card-title {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .myth-row {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .myth-prompt {
-    font-size: 17px;
+    font-size: 15px;
   }
 
   .myth-citation {
-    font-size: 15px;
-    padding: 16px 18px;
+    font-size: 13px;
+    padding: 12px 14px;
   }
 }
 </style>
