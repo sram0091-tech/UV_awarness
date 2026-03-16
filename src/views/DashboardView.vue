@@ -412,74 +412,77 @@ onMounted(async () => {
 
       <!-- CANCER -->
       <template v-if="activeTab === 'cancer'">
-  <div v-if="!cancerStatusOk" class="status-bar">
-    <div class="status err">{{ cancerStatus }}</div>
-  </div>
+        <div v-if="!cancerStatusOk" class="status-bar">
+          <div class="status err">{{ cancerStatus }}</div>
+        </div>
 
-  <div class="panel panel-spaced">
-    <FilterBar @apply="onCancerApply">
-      <div class="filter-group">
-        <label for="cancerYear">Year</label>
-        <select id="cancerYear" v-model="cancerYear">
-          <option value="">All</option>
-          <option v-for="y in cancerFilters.years" :key="y" :value="y">{{ y }}</option>
-        </select>
-      </div>
+        <div class="panel panel-spaced">
+          <FilterBar @apply="onCancerApply">
+            <div class="filter-group">
+              <label for="cancerYear">Year</label>
+              <select id="cancerYear" v-model="cancerYear">
+                <option value="">All</option>
+                <option v-for="y in cancerFilters.years" :key="y" :value="y">{{ y }}</option>
+              </select>
+            </div>
 
-      <div class="filter-group">
-        <label for="cancerSex">Sex</label>
-        <select id="cancerSex" v-model="cancerSex">
-          <option value="">All</option>
-          <option v-for="s in cancerFilters.sexes" :key="s" :value="s">{{ s }}</option>
-        </select>
-      </div>
+            <div class="filter-group">
+              <label for="cancerSex">Sex</label>
+              <select id="cancerSex" v-model="cancerSex">
+                <option value="">All</option>
+                <option v-for="s in cancerFilters.sexes" :key="s" :value="s">{{ s }}</option>
+              </select>
+            </div>
 
-      <div class="filter-group">
-        <label for="cancerState">State</label>
-        <select id="cancerState" v-model="cancerState">
-          <option value="">All</option>
-          <option v-for="st in cancerFilters.states" :key="st" :value="st">{{ st }}</option>
-        </select>
-      </div>
-    </FilterBar>
+            <div class="filter-group">
+              <label for="cancerState">State</label>
+              <select id="cancerState" v-model="cancerState">
+                <option value="">All</option>
+                <option v-for="st in cancerFilters.states" :key="st" :value="st">{{ st }}</option>
+              </select>
+            </div>
+          </FilterBar>
 
-    <div class="info-note">
-      <strong>How to read this dashboard:</strong>
-      Rate 2001 means the age-standardised rate based on the 2001 Australian Standard Population
-      (per 100,000). Rate 2023 means the age-standardised rate based on the 2023 Australian population
-      (per 100,000).
-    </div>
+          <div class="info-note">
+            <strong>How to read this dashboard:</strong>
+            Rate 2001 means the age-standardised rate based on the 2001 Australian Standard Population
+            (per 100,000). Rate 2023 means the age-standardised rate based on the 2023 Australian population
+            (per 100,000).
+          </div>
 
-    <div class="cancer-summary-wrap">
-      <SummaryCards :items="cancerSummaryItems" />
-    </div>
+          <div class="cancer-summary-wrap">
+  <SummaryCards :items="cancerSummaryItems" />
+</div>
 
-    <div class="insight-card-wrap">
-      <InsightCard title="Key Insight" :content="insightText" />
-    </div>
+          <div class="insight-card-wrap">
+            <InsightCard title="Key Insight" :content="insightText" />
+          </div>
 
-    <div class="chart-card">
-      <div class="chart-title">Rate by State</div>
-      <p class="chart-subtitle">
-        Compares age-standardised rates by state for 2001 and 2023, ordered by highest 2023 value.
-      </p>
-      <CancerStateBarChart :data="stateRates" />
-    </div>
+          <div class="chart-card">
+            <div class="chart-title">Rate by State</div>
+            <p class="chart-subtitle">
+              Compares age-standardised rates by state for 2001 and 2023, ordered by highest 2023 value.
+            </p>
+            <CancerStateBarChart :data="stateRates" />
+          </div>
 
-    <div class="insight-card-wrap">
-      <InsightCard
-        title="Understanding the rates"
-        content="The cancer rates shown in this dashboard are age-standardised so that states and years can be compared fairly. Rate 2001 uses the age structure of the Australian population in 2001 as the reference population, while Rate 2023 uses the 2023 population structure. All values represent cases per 100,000 people."
-      />
-    </div>
+          <div class="insight-card-wrap">
+  <InsightCard
+    title="Understanding the rates"
+    content="The cancer rates shown in this dashboard are age-standardised so that states and years
+    can be compared fairly. “Rate 2001” uses the age structure of the Australian population
+    in 2001 as the reference population, while “Rate 2023” uses the 2023 population structure.
+    All values represent cases per 100,000 people."
+  />
+</div>
 
-    <div class="chart-card chart-card-lg">
-      <div class="chart-title">Yearly Trend</div>
-      <p class="chart-subtitle">Track how the selected rate changes across time.</p>
-      <CancerTrendLineChart :data="trend" />
-    </div>
-  </div>
-</template>
+          <div class="chart-card chart-card-lg">
+            <div class="chart-title">Yearly Trend</div>
+            <p class="chart-subtitle">Track how the selected rate changes across time.</p>
+            <CancerTrendLineChart :data="trend" />
+          </div>
+      </template>
+
       
       <!-- UV -->
 <template v-else>
