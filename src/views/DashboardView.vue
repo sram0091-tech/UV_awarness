@@ -91,7 +91,7 @@ function buildCancerInsightText() {
     return
   }
 
-const stateName = (cancerSummary.value.highestRateState ?? cancerState.value) || 'the selected state'
+  const stateName = (cancerSummary.value.highestRateState ?? cancerState.value) || 'the selected state'
   const rate2001 = cancerSummary.value.averageRate2001
   const rate2023 = cancerSummary.value.averageRate2023
   const changePct = cancerSummary.value.rateChangePercent
@@ -181,14 +181,13 @@ function onCancerApply() {
 
 /* -------------------- UV state -------------------- */
 
-/* -------------------- UV state -------------------- */
-
 const uvStatus = ref('Waiting to load UV data…')
 const uvStatusOk = ref(true)
 const uvFilters = ref({ months: [], seasons: [] })
 
 const uvMonth = ref('')
 const uvSeason = ref('')
+
 watch(uvMonth, (newValue) => {
   if (newValue) {
     uvSeason.value = ''
@@ -375,146 +374,173 @@ onMounted(async () => {
 })
 </script>
 
-<template v-if="activeTab === 'cancer'">
-  <div v-if="!cancerStatusOk" class="status-bar">
-    <div class="status err">{{ cancerStatus }}</div>
-  </div>
-
-  <div class="panel panel-spaced">
-    <FilterBar @apply="onCancerApply">
-      <div class="filter-group">
-        <label for="cancerYear">Year</label>
-        <select id="cancerYear" v-model="cancerYear">
-          <option value="">All</option>
-          <option v-for="y in cancerFilters.years" :key="y" :value="y">{{ y }}</option>
-        </select>
+<template>
+  <div class="dashboard-page">
+    <div class="dashboard-header">
+      <div class="dashboard-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'cancer' }"
+          @click="activeTab = 'cancer'"
+        >
+          Cancer
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'uv' }"
+          @click="activeTab = 'uv'"
+        >
+          UV
+        </button>
       </div>
 
-      <div class="filter-group">
-        <label for="cancerSex">Sex</label>
-        <select id="cancerSex" v-model="cancerSex">
-          <option value="">All</option>
-          <option v-for="s in cancerFilters.sexes" :key="s" :value="s">{{ s }}</option>
-        </select>
+      <div class="section-heading">
+        <div>{{ sectionNumber }}</div>
+        <h2>{{ sectionTitle }}</h2>
       </div>
 
-      <div class="filter-group">
-        <label for="cancerState">State</label>
-        <select id="cancerState" v-model="cancerState">
-          <option value="">All</option>
-          <option v-for="st in cancerFilters.states" :key="st" :value="st">{{ st }}</option>
-        </select>
+      <p class="section-desc">{{ sectionDesc }}</p>
+    </div>
+
+    <template v-if="activeTab === 'cancer'">
+      <div v-if="!cancerStatusOk" class="status-bar">
+        <div class="status err">{{ cancerStatus }}</div>
       </div>
-    </FilterBar>
 
-    <div class="info-note">
-      <strong>How to read this dashboard:</strong>
-      Rate 2001 means the age-standardised rate based on the 2001 Australian Standard Population
-      (per 100,000). Rate 2023 means the age-standardised rate based on the 2023 Australian population
-      (per 100,000).
-    </div>
+      <div class="panel panel-spaced">
+        <FilterBar @apply="onCancerApply">
+          <div class="filter-group">
+            <label for="cancerYear">Year</label>
+            <select id="cancerYear" v-model="cancerYear">
+              <option value="">All</option>
+              <option v-for="y in cancerFilters.years" :key="y" :value="y">{{ y }}</option>
+            </select>
+          </div>
 
-    <div class="cancer-summary-wrap">
-      <SummaryCards :items="cancerSummaryItems" />
-    </div>
+          <div class="filter-group">
+            <label for="cancerSex">Sex</label>
+            <select id="cancerSex" v-model="cancerSex">
+              <option value="">All</option>
+              <option v-for="s in cancerFilters.sexes" :key="s" :value="s">{{ s }}</option>
+            </select>
+          </div>
 
-    <div class="insight-card-wrap">
-      <InsightCard title="Key Insight" :content="insightText" />
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-title">Rate by State</div>
-      <p class="chart-subtitle">
-        Compares age-standardised rates by state for 2001 and 2023, ordered by highest 2023 value.
-      </p>
-      <CancerStateBarChart :data="stateRates" />
-    </div>
-
-    <div class="insight-card-wrap">
-      <InsightCard
-        title="Understanding the rates"
-        content="The cancer rates shown in this dashboard are age-standardised so that states and years can be compared fairly. Rate 2001 uses the age structure of the Australian population in 2001 as the reference population, while Rate 2023 uses the 2023 population structure. All values represent cases per 100,000 people."
-      />
-    </div>
-
-    <div class="chart-card chart-card-lg">
-      <div class="chart-title">Yearly Trend</div>
-      <p class="chart-subtitle">Track how the selected rate changes across time.</p>
-      <CancerTrendLineChart :data="trend" />
-    </div>
-  </div>
-</template>
-      
-      <!-- UV -->
-
-
-      <template v-else>
-        <div v-if="!uvStatusOk" class="status-bar">
-          <div class="status err">{{ uvStatus }}</div>
-        </div>
+          <div class="filter-group">
+            <label for="cancerState">State</label>
+            <select id="cancerState" v-model="cancerState">
+              <option value="">All</option>
+              <option v-for="st in cancerFilters.states" :key="st" :value="st">{{ st }}</option>
+            </select>
+          </div>
+        </FilterBar>
 
         <div class="info-note">
           <strong>How to read this dashboard:</strong>
-          {{ uvHowToReadText }}
+          Rate 2001 means the age-standardised rate based on the 2001 Australian Standard Population
+          (per 100,000). Rate 2023 means the age-standardised rate based on the 2023 Australian population
+          (per 100,000).
         </div>
 
-        <div class="panel panel-spaced">
-          <div class="filter-row uv-filter-row">
-            <div class="filter-group">
-              <label for="uvMonth">Month</label>
-              <select id="uvMonth" v-model="uvMonth">
-                <option value="">All</option>
-                <option v-for="m in uvFilters.months" :key="m" :value="m">{{ m }}</option>
-              </select>
-            </div>
+        <div class="cancer-summary-wrap">
+          <SummaryCards :items="cancerSummaryItems" />
+        </div>
 
-            <div class="filter-group">
-              <label for="uvSeason">Season</label>
-              <select id="uvSeason" v-model="uvSeason">
-                <option value="">All</option>
-                <option v-for="s in uvFilters.seasons" :key="s" :value="s">{{ s }}</option>
-              </select>
-            </div>
+        <div class="insight-card-wrap">
+          <InsightCard title="Key Insight" :content="insightText" />
+        </div>
 
-            <div class="filter-actions">
-              <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
-              <button type="button" class="apply-btn clear-btn" @click="clearUvFilters">Clear</button>
-            </div>
+        <div class="chart-card">
+          <div class="chart-title">Rate by State</div>
+          <p class="chart-subtitle">
+            Compares age-standardised rates by state for 2001 and 2023, ordered by highest 2023 value.
+          </p>
+          <CancerStateBarChart :data="stateRates" />
+        </div>
 
-            <div class="filter-helper">
-              Select either a month or a season. Choosing one will clear the other.
-            </div>
+        <div class="insight-card-wrap">
+          <InsightCard
+            title="Understanding the rates"
+            content="The cancer rates shown in this dashboard are age-standardised so that states and years can be compared fairly. Rate 2001 uses the age structure of the Australian population in 2001 as the reference population, while Rate 2023 uses the 2023 population structure. All values represent cases per 100,000 people."
+          />
+        </div>
+
+        <div class="chart-card chart-card-lg">
+          <div class="chart-title">Yearly Trend</div>
+          <p class="chart-subtitle">Track how the selected rate changes across time.</p>
+          <CancerTrendLineChart :data="trend" />
+        </div>
+      </div>
+    </template>
+
+    <template v-else>
+      <div v-if="!uvStatusOk" class="status-bar">
+        <div class="status err">{{ uvStatus }}</div>
+      </div>
+
+      <div class="info-note">
+        <strong>How to read this dashboard:</strong>
+        {{ uvHowToReadText }}
+      </div>
+
+      <div class="panel panel-spaced">
+        <div class="filter-row uv-filter-row">
+          <div class="filter-group">
+            <label for="uvMonth">Month</label>
+            <select id="uvMonth" v-model="uvMonth">
+              <option value="">All</option>
+              <option v-for="m in uvFilters.months" :key="m" :value="m">{{ m }}</option>
+            </select>
           </div>
 
-          <SummaryCards :items="uvSummaryItems" :columns="3" />
-
-          <div class="uv-main-grid">
-            <div class="uv-chart-panel chart-card">
-              <div class="chart-title">UV Trend Chart</div>
-              <p class="chart-subtitle">
-                Compare average UV and maximum UV across the selected time range.
-              </p>
-              <UvYearlyLineChart :data="yearlyChartRows" />
-            </div>
-
-            <div class="uv-insight-panel">
-              <InsightCard
-                title="Live Insight"
-                :content="uvInsightText"
-              />
-            </div>
+          <div class="filter-group">
+            <label for="uvSeason">Season</label>
+            <select id="uvSeason" v-model="uvSeason">
+              <option value="">All</option>
+              <option v-for="s in uvFilters.seasons" :key="s" :value="s">{{ s }}</option>
+            </select>
           </div>
 
-          <div class="uv-risk-panel">
-            <RiskLegend
-              title="UV Risk Guide"
-              :items="riskLegendItems"
+          <div class="filter-actions">
+            <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
+            <button type="button" class="apply-btn clear-btn" @click="clearUvFilters">Clear</button>
+          </div>
+
+          <div class="filter-helper">
+            Select either a month or a season. Choosing one will clear the other.
+          </div>
+        </div>
+
+        <SummaryCards :items="uvSummaryItems" :columns="3" />
+
+        <div class="uv-main-grid">
+          <div class="uv-chart-panel chart-card">
+            <div class="chart-title">UV Trend Chart</div>
+            <p class="chart-subtitle">
+              Compare average UV and maximum UV across the selected time range.
+            </p>
+            <UvYearlyLineChart :data="yearlyChartRows" />
+          </div>
+
+          <div class="uv-insight-panel">
+            <InsightCard
+              title="Live Insight"
+              :content="uvInsightText"
             />
           </div>
         </div>
-      </template>
-  
 
+        <div class="uv-risk-panel">
+          <RiskLegend
+            title="UV Risk Guide"
+            :items="riskLegendItems"
+          />
+        </div>
+      </div>
+    </template>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-page {
