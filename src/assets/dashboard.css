@@ -240,7 +240,8 @@ nav {
 
 /* Dashboard shell */
 .dashboard-shell {
-  padding: 100px 34px 40px;
+  width: 100%;
+  padding: 8px 20px 24px;
 }
 
 .section-heading {
@@ -430,19 +431,19 @@ nav {
 }
 
 .insights-card {
-  padding: 18px;
-  min-height: 220px;
+  padding: 14px 18px;
 }
 
 .insights-card h3 {
   color: var(--light-blue);
-  margin-bottom: 10px;
-  font-size: 18px;
+  margin-bottom: 6px;
+  font-size: 17px;
 }
 
 .insights-card p {
   font-size: 13px;
-  line-height: 1.7;
+  line-height: 1.5;
+  margin: 4px 0 0;
   color: var(--white);
 }
 

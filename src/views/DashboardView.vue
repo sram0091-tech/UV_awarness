@@ -86,40 +86,47 @@ function setCancerSummaryItems() {
 }
 
 function buildCancerInsightText() {
-  if (!stateRates.value.length && !trend.value.length) {
+  if (!cancerSummary.value) {
     insightText.value = 'No cancer records were returned for the current filter combination.'
     return
   }
 
-  const topState = stateRates.value[0]
-  const trendStart = trend.value[0]
-  const trendEnd = trend.value[trend.value.length - 1]
+const stateName = (cancerSummary.value.highestRateState ?? cancerState.value) || 'the selected state'
+  const rate2001 = cancerSummary.value.averageRate2001
+  const rate2023 = cancerSummary.value.averageRate2023
+  const changePct = cancerSummary.value.rateChangePercent
 
-  let trendSentence = 'A long-term trend is not available for the current selection.'
-  if (trendStart && trendEnd) {
-    const startRate = Number(trendStart.rate ?? trendStart.value ?? trendStart.averageRate ?? 0)
-    const endRate = Number(trendEnd.rate ?? trendEnd.value ?? trendEnd.averageRate ?? 0)
-
-    if (Number.isFinite(startRate) && Number.isFinite(endRate)) {
-      if (endRate > startRate) {
-        trendSentence = `The long-term trend rises from ${numberOrDash(startRate)} to ${numberOrDash(endRate)}.`
-      } else if (endRate < startRate) {
-        trendSentence = `The long-term trend falls from ${numberOrDash(startRate)} to ${numberOrDash(endRate)}.`
-      } else {
-        trendSentence = `The long-term trend stays broadly stable at around ${numberOrDash(endRate)}.`
-      }
-    }
+  let stateSentence = ''
+  if (stateName && rate2001 != null && rate2023 != null) {
+    stateSentence = `${stateName} records ${numberOrDash(rate2023)} in 2023 compared with ${numberOrDash(rate2001)} in 2001.`
+  } else {
+    stateSentence = 'A state-level comparison is not available for the current selection.'
   }
 
-  const stateSentence = topState
-    ? `${topState.state} has the highest visible state rate, with ${numberOrDash(topState.rate2023)} in 2023 compared with ${numberOrDash(topState.rate2001)} in 2001.`
-    : 'A leading state result is not available for the current selection.'
+  let changeSentence = ''
+  if (changePct != null && Number.isFinite(Number(changePct))) {
+    const pct = Number(changePct)
+    if (pct > 0) {
+      changeSentence = `That represents an increase of ${numberOrDash(pct)}% over the comparison period.`
+    } else if (pct < 0) {
+      changeSentence = `That represents a decrease of ${numberOrDash(Math.abs(pct))}% over the comparison period.`
+    } else {
+      changeSentence = 'The rate remains unchanged across the comparison period.'
+    }
+  } else {
+    changeSentence = 'Change across the comparison period is not available.'
+  }
 
-  const summarySentence = cancerSummary.value?.highestRateState
-    ? `The summary also identifies ${cancerSummary.value.highestRateState} as the highest-rate state in 2023.`
-    : 'A summary-level highest-rate state is not available for the current selection.'
+  let trendSentence = ''
+  if (cancerYear.value) {
+    trendSentence = 'Clear the year filter to view the long-term trend over time.'
+  } else if (trend.value.length > 1) {
+    trendSentence = 'The yearly trend chart below shows how the rate changes over time.'
+  } else {
+    trendSentence = 'A long-term trend is not available for the current selection.'
+  }
 
-  insightText.value = `${stateSentence} ${trendSentence} ${summarySentence}`
+  insightText.value = `${stateSentence} ${changeSentence} ${trendSentence}`
 }
 
 async function loadCancerFilters() {
@@ -156,6 +163,7 @@ async function loadCancerDashboard() {
       : []
 
     trend.value = Array.isArray(trendRes) ? trendRes : []
+    console.log('Trend data:', trend.value)
     cancerSummary.value = summaryRes
 
     setCancerSummaryItems()
@@ -482,10 +490,6 @@ onMounted(async () => {
   padding-top: 24px;
 }
 
-.dashboard-shell {
-  max-width: 1400px;
-  margin: 0 auto;
-}
 
 .dashboard-header {
   margin-bottom: 18px;

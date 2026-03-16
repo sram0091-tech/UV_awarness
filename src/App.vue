@@ -4,7 +4,6 @@ import Navbar from './components/Navbar.vue'
 
 <template>
   <Navbar />
-  <TitleBlock />
   <main class="page-container">
     <router-view />
   </main>
