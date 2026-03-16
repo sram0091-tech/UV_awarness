@@ -788,5 +788,40 @@ onMounted(async () => {
   color: #f8fafc;
 }
 
+.uv-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.9fr);
+  gap: 20px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.uv-chart-panel {
+  min-width: 0;
+}
+
+.uv-insight-panel {
+  min-width: 0;
+}
+
+.uv-risk-panel {
+  margin-top: 20px;
+}
+
+.uv-insight-panel :deep(.insight-card),
+.uv-risk-panel :deep(.legend-card) {
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .uv-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .uv-risk-panel {
+    margin-top: 16px;
+  }
+}
+
 }
 </style> 
