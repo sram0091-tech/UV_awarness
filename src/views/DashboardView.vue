@@ -526,28 +526,29 @@ onMounted(async () => {
     <SummaryCards :items="uvSummaryItems" :columns="3" />
 
     <div class="uv-layout">
-      <div class="left-column">
-        <div class="chart-card">
-          <div class="chart-title">UV Trend Chart</div>
-          <p class="chart-subtitle">
-            Compare average UV and maximum UV across the selected time range.
-          </p>
-          <UvYearlyLineChart :data="yearlyChartRows" />
-        </div>
+      <div class="uv-main-grid">
+  <div class="uv-chart-panel chart-card">
+    <div class="chart-title">UV Trend Chart</div>
+    <p class="chart-subtitle">
+      Compare average UV and maximum UV across the selected time range.
+    </p>
+    <UvYearlyLineChart :data="yearlyChartRows" />
+  </div>
 
-        <div class="insight-card-wrap">
-          <InsightCard title="Live Insight"
-          content="uvInsightText"/>
-      </div>
+  <div class="uv-insight-panel">
+    <InsightCard
+      title="Live Insight"
+      :content="uvInsightText"
+    />
+  </div>
+</div>
 
-      <div class="right-column">
-        <div class="risk-card panel">
-          <div class="risk-header">
-            <h3>UV Risk Guide</h3>
-            <span class="risk-badge">
-              Highest current risk: {{ uvSummary?.highestRiskCategory ?? '—' }}
-            </span>
-          </div>
+<div class="uv-risk-panel">
+  <RiskLegend
+    title="UV Risk Guide"
+    :items="riskLegendItems"
+  />
+</div>
 
           <RiskLegend
             title="Protection guidance by UV category"
