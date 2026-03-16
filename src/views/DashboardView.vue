@@ -261,7 +261,6 @@ const uvInsightText = computed(() => {
   const highestRisk = s?.highestRiskCategory ?? 'unknown'
   const maxUv = Number(s?.maxUv)
   const avgUv = Number(s?.averageUv)
-
   const periodLabel = uvMonth.value || uvSeason.value || 'the selected period'
 
   if (!rows.length) {
@@ -504,7 +503,7 @@ onMounted(async () => {
 
           <div class="filter-actions">
             <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
-            <button type="button" class="apply-btn clear-btn" @click="clearUvFilters">Clear</button>
+            <button type="button" class="apply-btn" @click="clearUvFilters">Clear</button>
           </div>
 
           <div class="filter-helper">
@@ -523,7 +522,7 @@ onMounted(async () => {
             <UvYearlyLineChart :data="yearlyChartRows" />
           </div>
 
-          <div class="uv-insight-panel">
+          <div class="uv-insight-panel insight-card-wrap">
             <InsightCard
               title="Live Insight"
               :content="uvInsightText"
@@ -628,11 +627,6 @@ onMounted(async () => {
   color: #9ca3af;
   font-size: 0.9rem;
   line-height: 1.45;
-}
-
-.clear-btn {
-  background: #facc15;
-  color: #111;
 }
 
 .cancer-summary-wrap :deep(.summary-grid) {
