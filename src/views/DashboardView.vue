@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import SummaryCards from '../components/SummaryCards.vue'
 import InsightCard from '../components/InsightCard.vue'
 import CancerStateBarChart from '../components/charts/CancerStateBarChart.vue'
@@ -188,6 +188,17 @@ const uvFilters = ref({ months: [], seasons: [] })
 
 const uvMonth = ref('')
 const uvSeason = ref('')
+watch(uvMonth, (newValue) => {
+  if (newValue) {
+    uvSeason.value = ''
+  }
+})
+
+watch(uvSeason, (newValue) => {
+  if (newValue) {
+    uvMonth.value = ''
+  }
+})
 
 const riskList = ref([])
 const yearlyChartRows = ref([])
@@ -204,24 +215,9 @@ const uvSummaryItems = computed(() => [
   { label: 'Highest Risk', value: uvSummary.value?.highestRiskCategory ?? '—' }
 ])
 
-const uvHowToReadItems = computed(() => [
-  {
-    title: 'Use the filters',
-    text: 'Select a month or season to focus the dashboard on a specific time period in Melbourne.'
-  },
-  {
-    title: 'Read the summary cards',
-    text: 'Max UV shows the strongest observed UV level, Average UV shows the overall level, and Highest Risk shows the most severe exposure category.'
-  },
-  {
-    title: 'Interpret the trend chart',
-    text: 'The two lines compare average UV and maximum UV across the selected range so changes in intensity are easy to spot.'
-  },
-  {
-    title: 'Use the risk guide',
-    text: 'The risk cards explain what each UV category means and the highest current category is highlighted automatically.'
-  }
-])
+const uvHowToReadText = computed(() => {
+  return 'Use either Month or Season to filter the dashboard. Max UV shows the strongest recorded UV level, Average UV shows the overall exposure level, the trend chart compares average and maximum UV across the selected range, and the risk guide explains what each UV category means for sun protection.'
+})
 
 const activeRiskCategory = computed(() =>
   String(uvSummary.value?.highestRiskCategory ?? '').trim().toLowerCase()
@@ -263,22 +259,35 @@ const uvInsightText = computed(() => {
   }
 
   const highestRisk = s?.highestRiskCategory ?? 'unknown'
-  const maxUv = numberOrDash(s?.maxUv)
-  const avgUv = numberOrDash(s?.averageUv)
+  const maxUv = Number(s?.maxUv)
+  const avgUv = Number(s?.averageUv)
+
+  const periodLabel = uvMonth.value || uvSeason.value || 'the selected period'
 
   if (!rows.length) {
-    return `The selected period reports a maximum UV of ${maxUv}, an average UV of ${avgUv}, and a highest risk category of ${highestRisk}.`
+    return `For ${periodLabel}, the dashboard reports a maximum UV of ${numberOrDash(s?.maxUv)}, an average UV of ${numberOrDash(s?.averageUv)}, and a highest risk category of ${highestRisk}.`
   }
 
   const maxPoint = rows.reduce((best, row) => {
-    const value = Number(row.hourlyMaxUv)
-    if (!best || value > Number(best.hourlyMaxUv)) return row
-    return best
+    const current = Number(row.hourlyMaxUv ?? 0)
+    const bestValue = Number(best?.hourlyMaxUv ?? -1)
+    return current > bestValue ? row : best
   }, null)
 
-  const peakLabel = maxPoint?.label ?? 'the selected range'
+  const meanPoint = rows.reduce((best, row) => {
+    const current = Number(row.hourlyMeanUv ?? 0)
+    const bestValue = Number(best?.hourlyMeanUv ?? -1)
+    return current > bestValue ? row : best
+  }, null)
 
-  return `The selected period reaches a maximum UV of ${maxUv} and an average UV of ${avgUv}. The highest risk category is ${highestRisk}, and the strongest visible UV point occurs around ${peakLabel}.`
+  const peakMaxLabel = maxPoint?.label ?? 'the visible range'
+  const peakMeanLabel = meanPoint?.label ?? 'the visible range'
+
+  if (Number.isFinite(maxUv) && Number.isFinite(avgUv)) {
+    return `For ${periodLabel}, UV levels peak at ${numberOrDash(maxUv)} and average ${numberOrDash(avgUv)} overall. The highest risk category is ${highestRisk}. The maximum UV line peaks around ${peakMaxLabel}, while the average UV line is strongest around ${peakMeanLabel}.`
+  }
+
+  return `For ${periodLabel}, the highest risk category is ${highestRisk}. The trend chart shows how average and maximum UV change across the visible range.`
 })
 
 async function loadUvFilters() {
@@ -469,15 +478,10 @@ onMounted(async () => {
     <div class="status err">{{ uvStatus }}</div>
   </div>
 
-  <div class="how-to-read-card">
-    <div class="chart-title">How to read this dashboard</div>
-    <div class="how-grid">
-      <div v-for="(item, i) in uvHowToReadItems" :key="i" class="how-item">
-        <div class="how-item-title">{{ item.title }}</div>
-        <div class="how-item-text">{{ item.text }}</div>
-      </div>
-    </div>
-  </div>
+  <div class="info-note">
+  <strong>How to read this dashboard:</strong>
+  {{ uvHowToReadText }}
+</div>
 
   <div class="panel panel-spaced">
     <div class="filter-row uv-filter-row">
@@ -502,6 +506,10 @@ onMounted(async () => {
         <button type="button" class="clear-btn" @click="clearUvFilters">Clear</button>
       </div>
     </div>
+
+    <div class="filter-helper">
+  Select either a month or a season. Choosing one will clear the other.
+</div>
 
     <SummaryCards :items="uvSummaryItems" :columns="3" />
 
@@ -669,79 +677,13 @@ onMounted(async () => {
   .filter-actions {
     width: 100%;
   }
-  
-  .how-to-read-card {
-  margin-bottom: 18px;
-  padding: 20px;
-  border-radius: 20px;
-  background: rgba(12, 16, 28, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
 
-.how-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 14px;
-}
-
-.how-item {
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.how-item-title {
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.how-item-text {
-  color: #d1d5db;
-  line-height: 1.55;
-}
-
-.filter-actions {
-  display: flex;
-  align-items: end;
-  gap: 10px;
-}
-
-.clear-btn {
-  height: 54px;
-  padding: 0 18px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: transparent;
-  color: #fff;
-  cursor: pointer;
-}
-
-.uv-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.9fr);
-  gap: 20px;
-  align-items: start;
-}
-
-.left-column,
-.right-column {
-  display: grid;
-  gap: 18px;
-}
-
-.insight-card-lite {
-  padding: 20px;
-  border-radius: 20px;
-  background: rgba(12, 16, 28, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.insight-text {
-  margin: 8px 0 0;
-  color: #e5e7eb;
-  line-height: 1.65;
+  .filter-helper {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  color: #9ca3af;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .risk-header {
@@ -762,5 +704,7 @@ onMounted(async () => {
   font-size: 0.92rem;
   font-weight: 600;
 }
+
+
 }
 </style> 
