@@ -482,6 +482,7 @@ onMounted(async () => {
             <CancerTrendLineChart :data="trend" />
           </div>
         </div>
+        </div>
       </template>
 
       
