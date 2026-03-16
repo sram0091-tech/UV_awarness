@@ -466,6 +466,18 @@ onMounted(async () => {
             <CancerStateBarChart :data="stateRates" />
           </div>
 
+          <div class="dashboard-footnote dashboard-footnote-info">
+  <span class="footnote-icon">i</span>
+  <div class="footnote-text">
+    <strong>About these rates</strong>
+    <div>
+      The cancer rates are age-standardised so different states and years can be compared fairly.
+      Rate 2001 uses the age structure of the Australian population in 2001, while Rate 2023 uses
+      the 2023 population structure. All values are shown per 100,000 people.
+    </div>
+  </div>
+</div>
+
           <div class="chart-card chart-card-lg">
             <div class="chart-title">Yearly Trend</div>
             <p class="chart-subtitle">Track how the selected rate changes across time.</p>
@@ -474,7 +486,7 @@ onMounted(async () => {
         </div>
       </template>
 
-      <!-- UV -->
+      
       <!-- UV -->
 <template v-else>
   <div v-if="!uvStatusOk" class="status-bar">
@@ -738,6 +750,46 @@ onMounted(async () => {
   }
 }
 
+.dashboard-footnote {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dashboard-footnote-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.footnote-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 22px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #111;
+  background: #facc15;
+  margin-top: 2px;
+}
+
+.footnote-text {
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.footnote-text strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #f8fafc;
+}
 
 }
 </style> 
