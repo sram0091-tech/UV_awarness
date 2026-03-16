@@ -1,14 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import SummaryCards from '../components/SummaryCards.vue'
-import FilterBar from '../components/FilterBar.vue'
 import InsightCard from '../components/InsightCard.vue'
 import CancerStateBarChart from '../components/charts/CancerStateBarChart.vue'
 import CancerTrendLineChart from '../components/charts/CancerTrendLineChart.vue'
-import UvDailyLineChart from '../components/charts/UvDailyLineChart.vue'
 import UvYearlyLineChart from '../components/charts/UvYearlyLineChart.vue'
 import * as cancerApi from '../services/cancerApi.js'
 import * as uvApi from '../services/uvApi.js'
+import RiskLegend from '../components/RiskLegend.vue'
 
 const activeTab = ref('cancer')
 
@@ -181,30 +180,106 @@ function onCancerApply() {
 
 /* -------------------- UV state -------------------- */
 
+/* -------------------- UV state -------------------- */
+
 const uvStatus = ref('Waiting to load UV data…')
 const uvStatusOk = ref(true)
 const uvFilters = ref({ months: [], seasons: [] })
 
-const uvDate = ref('')
 const uvMonth = ref('')
 const uvSeason = ref('')
 
 const riskList = ref([])
-const uvSummaryItems = ref([
-  { label: 'Max UV', value: '—' },
-  { label: 'Average UV', value: '—' },
-  { label: 'Highest Risk', value: '—' },
-  { label: 'Peak Hour', value: '—' }
-])
-
-const dailyChartRows = ref([])
 const yearlyChartRows = ref([])
-const tableRows = ref([])
+const uvSummary = ref(null)
 
 function setUvStatus(text, ok) {
   uvStatus.value = text
   uvStatusOk.value = ok
 }
+
+const uvSummaryItems = computed(() => [
+  { label: 'Max UV', value: numberOrDash(uvSummary.value?.maxUv) },
+  { label: 'Average UV', value: numberOrDash(uvSummary.value?.averageUv) },
+  { label: 'Highest Risk', value: uvSummary.value?.highestRiskCategory ?? '—' }
+])
+
+const uvHowToReadItems = computed(() => [
+  {
+    title: 'Use the filters',
+    text: 'Select a month or season to focus the dashboard on a specific time period in Melbourne.'
+  },
+  {
+    title: 'Read the summary cards',
+    text: 'Max UV shows the strongest observed UV level, Average UV shows the overall level, and Highest Risk shows the most severe exposure category.'
+  },
+  {
+    title: 'Interpret the trend chart',
+    text: 'The two lines compare average UV and maximum UV across the selected range so changes in intensity are easy to spot.'
+  },
+  {
+    title: 'Use the risk guide',
+    text: 'The risk cards explain what each UV category means and the highest current category is highlighted automatically.'
+  }
+])
+
+const activeRiskCategory = computed(() =>
+  String(uvSummary.value?.highestRiskCategory ?? '').trim().toLowerCase()
+)
+
+function riskColor(category) {
+  const value = String(category ?? '').toLowerCase()
+
+  if (value.includes('low')) return '#7dd3fc'
+  if (value.includes('moderate')) return '#fde047'
+  if (value.includes('high') && !value.includes('very')) return '#fb923c'
+  if (value.includes('very')) return '#f97316'
+  if (value.includes('extreme')) return '#ef4444'
+
+  return '#94a3b8'
+}
+
+const riskLegendItems = computed(() => {
+  const rows = Array.isArray(riskList.value) ? riskList.value : []
+
+  return rows.map((item) => {
+    const category = String(item.uvCategory ?? '').trim().toLowerCase()
+
+    return {
+      label: `${item.uvCategory} (${item.uvNumericCategory})`,
+      description: item.riskMessage,
+      color: riskColor(category),
+      active: category === activeRiskCategory.value
+    }
+  })
+})
+
+const uvInsightText = computed(() => {
+  const s = uvSummary.value
+  const rows = yearlyChartRows.value
+
+  if (!s && !rows.length) {
+    return 'No UV records were returned for the selected filter combination.'
+  }
+
+  const highestRisk = s?.highestRiskCategory ?? 'unknown'
+  const maxUv = numberOrDash(s?.maxUv)
+  const avgUv = numberOrDash(s?.averageUv)
+
+  if (!rows.length) {
+    return `The selected period reports a maximum UV of ${maxUv}, an average UV of ${avgUv}, and a highest risk category of ${highestRisk}.`
+  }
+
+  const maxPoint = rows.reduce((best, row) => {
+    const value = Number(row.hourlyMaxUv)
+    if (!best || value > Number(best.hourlyMaxUv)) return row
+    return best
+  }, null)
+
+  const peakLabel = maxPoint?.label ?? 'the selected range'
+
+  return `The selected period reaches a maximum UV of ${maxUv} and an average UV of ${avgUv}. The highest risk category is ${highestRisk}, and the strongest visible UV point occurs around ${peakLabel}.`
+})
 
 async function loadUvFilters() {
   const data = await uvApi.getFilters()
@@ -214,64 +289,55 @@ async function loadUvFilters() {
   }
 }
 
+function formatUvTrendLabel(row, index) {
+  if (row?.date) {
+    const raw = String(row.date)
+    if (raw.length >= 10) return raw.slice(5, 10)
+    return raw
+  }
+  if (row?.month) return String(row.month)
+  if (row?.season) return String(row.season)
+  if (row?.label) return String(row.label)
+  return String(index + 1)
+}
+
 async function loadUvDashboard() {
   setUvStatus('Loading UV data…', true)
 
   try {
     const params = {
-      date: uvDate.value || undefined,
       month: uvMonth.value || undefined,
       season: uvSeason.value || undefined
     }
 
-    const [riskRes, summaryRes, dailyRes, yearlyRes] = await Promise.all([
+    const [riskRes, summaryRes, yearlyRes] = await Promise.all([
       uvApi.getRiskExplanations(),
       uvApi.getSummary(params),
-      uvApi.getDailyLineChart({ date: params.date }).catch(() => []),
-      uvApi.getYearlyLineChart({
-        month: params.month,
-        season: params.season
-      }).catch(() => [])
+      uvApi.getYearlyLineChart(params).catch(() => [])
     ])
 
     riskList.value = Array.isArray(riskRes) ? riskRes : []
+    uvSummary.value = summaryRes
 
-    const daily = Array.isArray(dailyRes) ? dailyRes : []
     const yearly = Array.isArray(yearlyRes) ? yearlyRes : []
 
-    uvSummaryItems.value = [
-      { label: 'Max UV', value: numberOrDash(summaryRes?.maxUv) },
-      { label: 'Average UV', value: numberOrDash(summaryRes?.averageUv) },
-      { label: 'Highest Risk', value: summaryRes?.highestRiskCategory ?? '—' },
-      { label: 'Peak Hour', value: summaryRes?.peakHour ?? '—' }
-    ]
-
-    dailyChartRows.value = daily.map((r) => ({
-      label: r.hour,
-      hourlyMeanUv: r.hourlyMeanUv ?? r.hourly_mean_uv,
-      hourlyMaxUv: r.hourlyMaxUv ?? r.hourly_max_uv
-    }))
-
-    yearlyChartRows.value = yearly.slice(0, 30).map((r, i) => ({
-      label: r.date ? String(r.date).slice(5) : r.hour ?? i,
+    yearlyChartRows.value = yearly.slice(0, 31).map((r, i) => ({
+      label: formatUvTrendLabel(r, i),
       date: r.date,
       hourlyMeanUv: r.hourlyMeanUv ?? r.hourly_mean_uv,
       hourlyMaxUv: r.hourlyMaxUv ?? r.hourly_max_uv
-    }))
-
-    const forTable = (daily.length ? daily : yearly).slice(0, 12)
-    tableRows.value = forTable.map((row) => ({
-      date: row.date ?? '—',
-      hour: row.hour ?? '—',
-      hourlyMeanUv: numberOrDash(row.hourlyMeanUv ?? row.hourly_mean_uv),
-      hourlyMaxUv: numberOrDash(row.hourlyMaxUv ?? row.hourly_max_uv),
-      uvCategory: row.uvCategory ?? row.uv_category ?? '—'
     }))
 
     setUvStatus('UV data loaded successfully.', true)
   } catch (err) {
     setUvStatus(`Unable to load UV data: ${err.message}`, false)
   }
+}
+
+function clearUvFilters() {
+  uvMonth.value = ''
+  uvSeason.value = ''
+  loadUvDashboard()
 }
 
 function onUvApply() {
@@ -397,90 +463,82 @@ onMounted(async () => {
       </template>
 
       <!-- UV -->
-      <template v-else>
-        <div v-if="!uvStatusOk" class="status-bar">
-          <div class="status err">{{ uvStatus }}</div>
+      <!-- UV -->
+<template v-else>
+  <div v-if="!uvStatusOk" class="status-bar">
+    <div class="status err">{{ uvStatus }}</div>
+  </div>
+
+  <div class="how-to-read-card">
+    <div class="chart-title">How to read this dashboard</div>
+    <div class="how-grid">
+      <div v-for="(item, i) in uvHowToReadItems" :key="i" class="how-item">
+        <div class="how-item-title">{{ item.title }}</div>
+        <div class="how-item-text">{{ item.text }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-spaced">
+    <div class="filter-row uv-filter-row">
+      <div class="filter-group">
+        <label for="uvMonth">Month</label>
+        <select id="uvMonth" v-model="uvMonth">
+          <option value="">All</option>
+          <option v-for="m in uvFilters.months" :key="m" :value="m">{{ m }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="uvSeason">Season</label>
+        <select id="uvSeason" v-model="uvSeason">
+          <option value="">All</option>
+          <option v-for="s in uvFilters.seasons" :key="s" :value="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
+        <button type="button" class="clear-btn" @click="clearUvFilters">Clear</button>
+      </div>
+    </div>
+
+    <SummaryCards :items="uvSummaryItems" :columns="3" />
+
+    <div class="uv-layout">
+      <div class="left-column">
+        <div class="chart-card">
+          <div class="chart-title">UV Trend Chart</div>
+          <p class="chart-subtitle">
+            Compare average UV and maximum UV across the selected time range.
+          </p>
+          <UvYearlyLineChart :data="yearlyChartRows" />
         </div>
 
-        <div class="panel">
-          <div class="filter-row uv-filter-row">
-            <div class="filter-group">
-              <label for="uvDate">Single Date</label>
-              <input id="uvDate" v-model="uvDate" type="date" />
-            </div>
-
-            <div class="filter-group">
-              <label for="uvMonth">Month</label>
-              <select id="uvMonth" v-model="uvMonth">
-                <option value="">All</option>
-                <option v-for="m in uvFilters.months" :key="m" :value="m">{{ m }}</option>
-              </select>
-            </div>
-
-            <div class="filter-group">
-              <label for="uvSeason">Season</label>
-              <select id="uvSeason" v-model="uvSeason">
-                <option value="">All</option>
-                <option v-for="s in uvFilters.seasons" :key="s" :value="s">{{ s }}</option>
-              </select>
-            </div>
-
-            <button type="button" class="apply-btn" @click="onUvApply">Apply</button>
-          </div>
-
-          <SummaryCards :items="uvSummaryItems" :columns="4" />
-
-          <div class="uv-layout">
-            <div>
-              <div class="chart-card chart-gap">
-                <div class="chart-title">Daily UV Line Chart</div>
-                <UvDailyLineChart :data="dailyChartRows" />
-              </div>
-
-              <div class="chart-card">
-                <div class="chart-title">Yearly / Range UV Line Chart</div>
-                <UvYearlyLineChart :data="yearlyChartRows" />
-              </div>
-            </div>
-
-            <div>
-              <div class="risk-card panel chart-gap">
-                <h3>Risk Explanations</h3>
-                <div class="risk-list">
-                  <div v-for="(item, i) in riskList" :key="i" class="risk-item">
-                    <strong>{{ item.uvCategory }} ({{ item.uvNumericCategory }})</strong>
-                    <div>{{ item.riskMessage }}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="table-card">
-                <div class="chart-title">UV Data Snapshot</div>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Hour</th>
-                      <th>Mean UV</th>
-                      <th>Max UV</th>
-                      <th>Category</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(row, i) in tableRows" :key="i">
-                      <td>{{ row.date }}</td>
-                      <td>{{ row.hour }}</td>
-                      <td>{{ row.hourlyMeanUv }}</td>
-                      <td>{{ row.hourlyMaxUv }}</td>
-                      <td>{{ row.uvCategory }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+        <div class="insight-card-lite">
+          <div class="chart-title">Live Insight</div>
+          <p class="insight-text">{{ uvInsightText }}</p>
         </div>
-      </template>
+      </div>
+
+      <div class="right-column">
+        <div class="risk-card panel">
+          <div class="risk-header">
+            <h3>UV Risk Guide</h3>
+            <span class="risk-badge">
+              Highest current risk: {{ uvSummary?.highestRiskCategory ?? '—' }}
+            </span>
+          </div>
+
+          <RiskLegend
+            title="Protection guidance by UV category"
+            :items="riskLegendItems"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
     </div>
   </div>
 </template>
@@ -602,5 +660,107 @@ onMounted(async () => {
   .section-desc {
     max-width: 100%;
   }
+
+  .how-grid,
+  .uv-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions {
+    width: 100%;
+  }
+  
+  .how-to-read-card {
+  margin-bottom: 18px;
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(12, 16, 28, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.how-item {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.how-item-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.how-item-text {
+  color: #d1d5db;
+  line-height: 1.55;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}
+
+.clear-btn {
+  height: 54px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.uv-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.9fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.left-column,
+.right-column {
+  display: grid;
+  gap: 18px;
+}
+
+.insight-card-lite {
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(12, 16, 28, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.insight-text {
+  margin: 8px 0 0;
+  color: #e5e7eb;
+  line-height: 1.65;
+}
+
+.risk-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.risk-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.25);
+  color: #fef08a;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
 }
 </style> 
