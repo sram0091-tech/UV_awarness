@@ -38,16 +38,55 @@ function normalizeFilterList(value) {
   return []
 }
 
+function extractYear(row) {
+  if (!row) return null
+
+  if (row.year != null && Number.isFinite(Number(row.year))) {
+    return Number(row.year)
+  }
+
+  if (row.date) {
+    const match = String(row.date).match(/\d{4}/)
+    if (match) return Number(match[0])
+  }
+
+  if (row.label) {
+    const match = String(row.label).match(/\d{4}/)
+    if (match) return Number(match[0])
+  }
+
+  return null
+}
+
+function getTrendRate(row) {
+  if (!row) return null
+
+  const candidates = [
+    row.rate2023,
+    row.rate,
+    row.value,
+    row.asr2023,
+    row.avgRate2023
+  ]
+
+  for (const candidate of candidates) {
+    const n = Number(candidate)
+    if (Number.isFinite(n)) return n
+  }
+
+  return null
+}
+
 /* -------------------- Cancer state -------------------- */
 
 const cancerStatus = ref('Waiting to load cancer data…')
 const cancerStatusOk = ref(true)
 
-const cancerFilters = ref({ years: [], sexes: [], states: [] })
-const cancerYear = ref('')
+const cancerFilters = ref({ sexes: [], states: [] })
 const cancerSex = ref('')
 const cancerState = ref('')
 
+const fullStateRates = ref([])
 const stateRates = ref([])
 const trend = ref([])
 const cancerSummary = ref(null)
@@ -62,77 +101,159 @@ function setCancerStatus(text, ok) {
   cancerStatusOk.value = ok
 }
 
-function setCancerSummaryItems() {
-  const s = cancerSummary.value
+const selectedStateLabel = computed(() => cancerState.value || 'Australia')
+const selectedSexLabel = computed(() => cancerSex.value || 'All sexes')
 
-  if (!s) {
-    cancerSummaryItems.value = [
-      { label: 'Avg ASR (2001)', value: '—' },
-      { label: 'Avg ASR (2023)', value: '—' },
-      { label: 'Top State', value: '—' },
-      { label: 'Top ASR 2023', value: '—' },
-      { label: 'Change %', value: '—' }
-    ]
-    return
+const trendChartTitle = computed(() => {
+  const parts = ['Yearly Trend']
+
+  if (cancerSex.value) parts.push(cancerSex.value)
+  if (cancerState.value) {
+    parts.push(cancerState.value)
+  } else {
+    parts.push('Australia')
   }
 
+  return parts.join(' — ')
+})
+
+const trendChartSubtitle = computed(() => {
+  const sexLabel = cancerSex.value || 'all sexes'
+  const stateLabel = cancerState.value || 'Australia'
+  return `Track the 2023 age-standardised rate over time for ${sexLabel} in ${stateLabel}.`
+})
+
+function getNationalAverageRate() {
+  const rows = Array.isArray(fullStateRates.value) ? fullStateRates.value : []
+
+  const australiaRow = rows.find((row) => String(row.state).trim().toLowerCase() === 'australia')
+  if (australiaRow) return australiaRow.rate2023
+
+  const nonAustralia = rows.filter((row) => String(row.state).trim().toLowerCase() !== 'australia')
+  if (!nonAustralia.length) return null
+
+  const values = nonAustralia
+    .map((row) => Number(row.rate2023))
+    .filter((n) => Number.isFinite(n))
+
+  if (!values.length) return null
+  return values.reduce((sum, n) => sum + n, 0) / values.length
+}
+
+function getTopStateRow() {
+  const rows = Array.isArray(stateRates.value) ? stateRates.value : []
+  if (!rows.length) return null
+  return rows[0]
+}
+
+function getFiveYearChange() {
+  const rows = Array.isArray(trend.value) ? trend.value : []
+  if (!rows.length) return null
+
+  const enriched = rows
+    .map((row) => ({
+      ...row,
+      extractedYear: extractYear(row),
+      extractedRate: getTrendRate(row)
+    }))
+    .filter((row) => row.extractedYear != null && row.extractedRate != null)
+    .sort((a, b) => a.extractedYear - b.extractedYear)
+
+  if (enriched.length < 2) return null
+
+  const latest = enriched[enriched.length - 1]
+  const targetYear = latest.extractedYear - 5
+
+  let baseline = null
+
+  for (let i = enriched.length - 1; i >= 0; i--) {
+    if (enriched[i].extractedYear <= targetYear) {
+      baseline = enriched[i]
+      break
+    }
+  }
+
+  if (!baseline) {
+    baseline = enriched[0]
+  }
+
+  const latestRate = Number(latest.extractedRate)
+  const baselineRate = Number(baseline.extractedRate)
+
+  if (!Number.isFinite(latestRate) || !Number.isFinite(baselineRate) || baselineRate === 0) {
+    return null
+  }
+
+  return {
+    fromYear: baseline.extractedYear,
+    toYear: latest.extractedYear,
+    percent: ((latestRate - baselineRate) / baselineRate) * 100
+  }
+}
+
+function setCancerSummaryItems() {
+  const nationalAverage = getNationalAverageRate()
+  const topState = getTopStateRow()
+  const fiveYearChange = getFiveYearChange()
+
   cancerSummaryItems.value = [
-    { label: 'Avg ASR (2001)', value: numberOrDash(s.averageRate2001) },
-    { label: 'Avg ASR (2023)', value: numberOrDash(s.averageRate2023) },
-    { label: 'Top State', value: s.highestRateState ?? '—' },
-    { label: 'Top ASR 2023', value: numberOrDash(s.highestRate2023) },
-    { label: 'Change %', value: percentOrDash(s.rateChangePercent) }
+    {
+      label: 'National Avg (Australia)',
+      value: numberOrDash(nationalAverage)
+    },
+    {
+      label: 'Top State Rate',
+      value: topState
+        ? `${topState.state} — ${numberOrDash(topState.rate2023)}`
+        : '—'
+    },
+    {
+      label: `5-Year Change (${selectedStateLabel.value})`,
+      value: fiveYearChange ? percentOrDash(fiveYearChange.percent) : '—'
+    }
   ]
 }
 
 function buildCancerInsightText() {
-  if (!cancerSummary.value) {
-    insightText.value = 'No cancer records were returned for the current filter combination.'
-    return
-  }
+  const nationalAverage = getNationalAverageRate()
+  const topState = getTopStateRow()
+  const fiveYearChange = getFiveYearChange()
 
-  const stateName = (cancerSummary.value.highestRateState ?? cancerState.value) || 'the selected state'
-  const rate2001 = cancerSummary.value.averageRate2001
-  const rate2023 = cancerSummary.value.averageRate2023
-  const changePct = cancerSummary.value.rateChangePercent
+  const stateLabel = cancerState.value || 'Australia'
+  const sexLabel = cancerSex.value || 'all sexes'
 
-  let stateSentence = ''
-  if (stateName && rate2001 != null && rate2023 != null) {
-    stateSentence = `${stateName} records ${numberOrDash(rate2023)} in 2023 compared with ${numberOrDash(rate2001)} in 2001.`
-  } else {
-    stateSentence = 'A state-level comparison is not available for the current selection.'
-  }
+  const sentence1 = Number.isFinite(Number(nationalAverage))
+    ? `The national average 2023 age-standardised rate is ${numberOrDash(nationalAverage)} per 100,000.`
+    : 'The national average 2023 age-standardised rate is not available for the current filters.'
 
-  let changeSentence = ''
-  if (changePct != null && Number.isFinite(Number(changePct))) {
-    const pct = Number(changePct)
-    if (pct > 0) {
-      changeSentence = `That represents an increase of ${numberOrDash(pct)}% over the comparison period.`
-    } else if (pct < 0) {
-      changeSentence = `That represents a decrease of ${numberOrDash(Math.abs(pct))}% over the comparison period.`
+  const sentence2 = topState
+    ? `${topState.state} currently has the highest visible state rate at ${numberOrDash(topState.rate2023)} per 100,000.`
+    : 'A top state comparison is not available for the current filters.'
+
+  let sentence3 = ''
+  if (fiveYearChange) {
+    const direction =
+      Number(fiveYearChange.percent) > 0
+        ? 'increased'
+        : Number(fiveYearChange.percent) < 0
+          ? 'decreased'
+          : 'remained stable'
+
+    if (direction === 'remained stable') {
+      sentence3 = `For ${sexLabel} in ${stateLabel}, the rate has remained stable from ${fiveYearChange.fromYear} to ${fiveYearChange.toYear}.`
     } else {
-      changeSentence = 'The rate remains unchanged across the comparison period.'
+      sentence3 = `For ${sexLabel} in ${stateLabel}, the rate has ${direction} by ${numberOrDash(Math.abs(fiveYearChange.percent))}% from ${fiveYearChange.fromYear} to ${fiveYearChange.toYear}.`
     }
   } else {
-    changeSentence = 'Change across the comparison period is not available.'
+    sentence3 = `A 5-year change could not be calculated for ${sexLabel} in ${stateLabel}.`
   }
 
-  let trendSentence = ''
-  if (cancerYear.value) {
-    trendSentence = 'Clear the year filter to view the long-term trend over time.'
-  } else if (trend.value.length > 1) {
-    trendSentence = 'The yearly trend chart below shows how the rate changes over time.'
-  } else {
-    trendSentence = 'A long-term trend is not available for the current selection.'
-  }
-
-  insightText.value = `${stateSentence} ${changeSentence} ${trendSentence}`
+  insightText.value = `${sentence1} ${sentence2} ${sentence3}`
 }
 
 async function loadCancerFilters() {
   const data = await cancerApi.getFilters()
   cancerFilters.value = {
-    years: data.years || [],
     sexes: data.sexes || [],
     states: (data.states || []).filter((s) => s !== 'Australia')
   }
@@ -142,19 +263,24 @@ async function loadCancerDashboard() {
   setCancerStatus('Loading cancer data…', true)
 
   try {
-    if (!cancerFilters.value.years?.length) await loadCancerFilters()
+    if (!cancerFilters.value.sexes?.length) await loadCancerFilters()
 
     const params = {
-      year: cancerYear.value || undefined,
       sex: cancerSex.value || undefined,
       state: cancerState.value || undefined
     }
 
+    const stateParams = {
+      sex: cancerSex.value || undefined
+    }
+
     const [stateRatesRes, trendRes, summaryRes] = await Promise.all([
-      cancerApi.getRateByState(params),
+      cancerApi.getRateByState(stateParams),
       cancerApi.getTrend(params),
       cancerApi.getSummary(params)
     ])
+
+    fullStateRates.value = Array.isArray(stateRatesRes) ? stateRatesRes : []
 
     stateRates.value = Array.isArray(stateRatesRes)
       ? stateRatesRes
@@ -163,7 +289,6 @@ async function loadCancerDashboard() {
       : []
 
     trend.value = Array.isArray(trendRes) ? trendRes : []
-    console.log('Trend data:', trend.value)
     cancerSummary.value = summaryRes
 
     setCancerSummaryItems()
@@ -411,14 +536,6 @@ onMounted(async () => {
       <div class="panel panel-spaced">
         <FilterBar @apply="onCancerApply">
           <div class="filter-group">
-            <label for="cancerYear">Year</label>
-            <select id="cancerYear" v-model="cancerYear">
-              <option value="">All</option>
-              <option v-for="y in cancerFilters.years" :key="y" :value="y">{{ y }}</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
             <label for="cancerSex">Sex</label>
             <select id="cancerSex" v-model="cancerSex">
               <option value="">All</option>
@@ -437,13 +554,17 @@ onMounted(async () => {
 
         <div class="info-note">
           <strong>How to read this dashboard:</strong>
-          Rate 2001 means the age-standardised rate based on the 2001 Australian Standard Population
-          (per 100,000). Rate 2023 means the age-standardised rate based on the 2023 Australian population
-          (per 100,000).
+          The charts and cards show the 2023 age-standardised cancer rate per 100,000 people. Use Sex and State to refine the view. The trend chart updates to reflect the current filter selection.
+        </div>
+
+        <div class="chart-card chart-card-lg">
+          <div class="chart-title">{{ trendChartTitle }}</div>
+          <p class="chart-subtitle">{{ trendChartSubtitle }}</p>
+          <CancerTrendLineChart :data="trend" />
         </div>
 
         <div class="cancer-summary-wrap">
-          <SummaryCards :items="cancerSummaryItems" />
+          <SummaryCards :items="cancerSummaryItems" :columns="3" />
         </div>
 
         <div class="insight-card-wrap">
@@ -453,22 +574,9 @@ onMounted(async () => {
         <div class="chart-card">
           <div class="chart-title">Rate by State</div>
           <p class="chart-subtitle">
-            Compares age-standardised rates by state for 2001 and 2023, ordered by highest 2023 value.
+            Compares 2023 age-standardised rates by state, ordered by highest value.
           </p>
           <CancerStateBarChart :data="stateRates" />
-        </div>
-
-        <div class="insight-card-wrap">
-          <InsightCard
-            title="Understanding the rates"
-            content="The cancer rates shown in this dashboard are age-standardised so that states and years can be compared fairly. Rate 2001 uses the age structure of the Australian population in 2001 as the reference population, while Rate 2023 uses the 2023 population structure. All values represent cases per 100,000 people."
-          />
-        </div>
-
-        <div class="chart-card chart-card-lg">
-          <div class="chart-title">Yearly Trend</div>
-          <p class="chart-subtitle">Track how the selected rate changes across time.</p>
-          <CancerTrendLineChart :data="trend" />
         </div>
       </div>
     </template>
@@ -630,7 +738,7 @@ onMounted(async () => {
 }
 
 .cancer-summary-wrap :deep(.summary-grid) {
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
 
