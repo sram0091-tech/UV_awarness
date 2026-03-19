@@ -8,7 +8,7 @@ const navItems = [
   { path: '/', name: 'home', label: 'Home' },
   { path: '/dashboard', name: 'insights', label: 'Insights' },
   { path: '/myths', name: 'myths', label: 'Myth vs Fact' },
-  { path: '/about', name: 'about', label: 'Why It Matters' }
+  { path: '/about', name: 'about', label: 'About Us' }
 ]
 
 function go(path) {
