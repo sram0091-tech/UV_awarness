@@ -6,9 +6,9 @@ const route = useRoute()
 
 const navItems = [
   { path: '/', name: 'home', label: 'Home' },
-  { path: '/dashboard', name: 'dashboard', label: 'Dashboard' },
-  { path: '/myths', name: 'myths', label: 'Myths' },
-  { path: '/about', name: 'about', label: 'About Us' }
+  { path: '/dashboard', name: 'insights', label: 'Insights' },
+  { path: '/myths', name: 'myths', label: 'Myth vs Fact' },
+  { path: '/about', name: 'about', label: 'Why It Matters' }
 ]
 
 function go(path) {

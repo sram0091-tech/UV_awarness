@@ -105,7 +105,7 @@ const selectedStateLabel = computed(() => cancerState.value || 'Australia')
 const selectedSexLabel = computed(() => cancerSex.value || 'All sexes')
 
 const trendChartTitle = computed(() => {
-  const parts = ['Yearly Trend']
+  const parts = ['Cancer Rate Over Time']
 
   if (cancerSex.value) parts.push(cancerSex.value)
   if (cancerState.value) {
@@ -120,7 +120,7 @@ const trendChartTitle = computed(() => {
 const trendChartSubtitle = computed(() => {
   const sexLabel = cancerSex.value || 'all sexes'
   const stateLabel = cancerState.value || 'Australia'
-  return `Track the 2023 age-standardised rate over time for ${sexLabel} in ${stateLabel}.`
+  return `See how the 2023 age-standardised rate shifts over time for ${sexLabel} in ${stateLabel}.`
 })
 
 function getNationalAverageRate() {
@@ -198,17 +198,17 @@ function setCancerSummaryItems() {
 
   cancerSummaryItems.value = [
     {
-      label: 'National Avg (Australia)',
+      label: 'Australia Average',
       value: numberOrDash(nationalAverage)
     },
     {
-      label: 'Top State Rate',
+      label: 'Highest State Rate',
       value: topState
         ? `${topState.state} — ${numberOrDash(topState.rate2023)}`
         : '—'
     },
     {
-      label: `5-Year Change (${selectedStateLabel.value})`,
+      label: `5-Year Shift (${selectedStateLabel.value})`,
       value: fiveYearChange ? percentOrDash(fiveYearChange.percent) : '—'
     }
   ]
@@ -223,12 +223,12 @@ function buildCancerInsightText() {
   const sexLabel = cancerSex.value || 'all sexes'
 
   const sentence1 = Number.isFinite(Number(nationalAverage))
-    ? `The national average 2023 age-standardised rate is ${numberOrDash(nationalAverage)} per 100,000.`
-    : 'The national average 2023 age-standardised rate is not available for the current filters.'
+    ? `The national 2023 age-standardised rate is ${numberOrDash(nationalAverage)} per 100,000.`
+    : 'The national 2023 age-standardised rate is not available for the current filters.'
 
   const sentence2 = topState
-    ? `${topState.state} currently has the highest visible state rate at ${numberOrDash(topState.rate2023)} per 100,000.`
-    : 'A top state comparison is not available for the current filters.'
+    ? `${topState.state} currently shows the highest visible state rate at ${numberOrDash(topState.rate2023)} per 100,000.`
+    : 'A state comparison is not available for the current filters.'
 
   let sentence3 = ''
   if (fiveYearChange) {
@@ -335,13 +335,13 @@ function setUvStatus(text, ok) {
 }
 
 const uvSummaryItems = computed(() => [
-  { label: 'Max UV', value: numberOrDash(uvSummary.value?.maxUv) },
+  { label: 'Peak UV', value: numberOrDash(uvSummary.value?.maxUv) },
   { label: 'Average UV', value: numberOrDash(uvSummary.value?.averageUv) },
-  { label: 'Highest Risk', value: uvSummary.value?.highestRiskCategory ?? '—' }
+  { label: 'Highest Risk Level', value: uvSummary.value?.highestRiskCategory ?? '—' }
 ])
 
 const uvHowToReadText = computed(() => {
-  return 'Use either Month or Season to filter the dashboard. Max UV shows the strongest recorded UV level, Average UV shows the overall exposure level, the trend chart compares average and maximum UV across the selected range, and the risk guide explains what each UV category means for sun protection.'
+  return 'Choose either a month or a season to refine the view. Peak UV shows the strongest recorded level, Average UV shows the overall exposure level, the trend chart compares average and maximum UV across the selected range, and the risk guide explains what each category means for sun protection.'
 })
 
 const activeRiskCategory = computed(() =>
@@ -389,7 +389,7 @@ const uvInsightText = computed(() => {
   const periodLabel = uvMonth.value || uvSeason.value || 'the selected period'
 
   if (!rows.length) {
-    return `For ${periodLabel}, the dashboard reports a maximum UV of ${numberOrDash(s?.maxUv)}, an average UV of ${numberOrDash(s?.averageUv)}, and a highest risk category of ${highestRisk}.`
+    return `For ${periodLabel}, the view reports a peak UV of ${numberOrDash(s?.maxUv)}, an average UV of ${numberOrDash(s?.averageUv)}, and a highest risk category of ${highestRisk}.`
   }
 
   const maxPoint = rows.reduce((best, row) => {
@@ -408,10 +408,10 @@ const uvInsightText = computed(() => {
   const peakMeanLabel = meanPoint?.label ?? 'the visible range'
 
   if (Number.isFinite(maxUv) && Number.isFinite(avgUv)) {
-    return `For ${periodLabel}, UV levels peak at ${numberOrDash(maxUv)} and average ${numberOrDash(avgUv)} overall. The highest risk category is ${highestRisk}. The maximum UV line peaks around ${peakMaxLabel}, while the average UV line is strongest around ${peakMeanLabel}.`
+    return `For ${periodLabel}, UV peaks at ${numberOrDash(maxUv)} and averages ${numberOrDash(avgUv)} overall. The highest risk level is ${highestRisk}. The maximum UV line peaks around ${peakMaxLabel}, while the average UV line is strongest around ${peakMeanLabel}.`
   }
 
-  return `For ${periodLabel}, the highest risk category is ${highestRisk}. The trend chart shows how average and maximum UV change across the visible range.`
+  return `For ${periodLabel}, the highest risk level is ${highestRisk}. The trend chart shows how average and maximum UV change across the visible range.`
 })
 
 async function loadUvFilters() {
@@ -481,12 +481,12 @@ function onUvApply() {
 
 const sectionNumber = computed(() => (activeTab.value === 'cancer' ? '01' : '02'))
 const sectionTitle = computed(() =>
-  activeTab.value === 'cancer' ? 'Cancer Dashboard' : 'UV Dashboard'
+  activeTab.value === 'cancer' ? 'Cancer Insights' : 'UV Conditions'
 )
 const sectionDesc = computed(() =>
   activeTab.value === 'cancer'
-    ? 'Compare age-standardised cancer rates across Australian states and see how they change over time.'
-    : 'Explore Melbourne UV levels, risk categories, and trends across days and seasons.'
+    ? 'See how cancer rates compare across Australian states and how they shift over time.'
+    : 'Explore Melbourne UV patterns, risk levels, and how conditions change across dates and seasons.'
 )
 
 onMounted(async () => {
@@ -553,8 +553,8 @@ onMounted(async () => {
         </FilterBar>
 
         <div class="info-note">
-          <strong>How to read this dashboard:</strong>
-          The charts and cards show the 2023 age-standardised cancer rate per 100,000 people. Use Sex and State to refine the view. The trend chart updates to reflect the current filter selection.
+          <strong>How to read this view:</strong>
+          The charts and cards show the 2023 age-standardised cancer rate per 100,000 people. Use Sex and State to narrow the view and see how the trend changes with your selection.
         </div>
 
         <div class="chart-card chart-card-lg">
@@ -568,13 +568,13 @@ onMounted(async () => {
         </div>
 
         <div class="insight-card-wrap">
-          <InsightCard title="Key Insight" :content="insightText" />
+          <InsightCard title="What Stands Out" :content="insightText" />
         </div>
 
         <div class="chart-card">
-          <div class="chart-title">Rate by State</div>
+          <div class="chart-title">State Comparison</div>
           <p class="chart-subtitle">
-            Compares 2023 age-standardised rates by state, ordered by highest value.
+            Compare 2023 age-standardised rates by state, ordered from highest to lowest.
           </p>
           <CancerStateBarChart :data="stateRates" />
         </div>
@@ -587,7 +587,7 @@ onMounted(async () => {
       </div>
 
       <div class="info-note">
-        <strong>How to read this dashboard:</strong>
+        <strong>How to read this view:</strong>
         {{ uvHowToReadText }}
       </div>
 
@@ -623,16 +623,16 @@ onMounted(async () => {
 
         <div class="uv-main-grid">
           <div class="uv-chart-panel chart-card">
-            <div class="chart-title">UV Trend Chart</div>
+            <div class="chart-title">UV Pattern Over Time</div>
             <p class="chart-subtitle">
-              Compare average UV and maximum UV across the selected time range.
+              Compare average UV and peak UV across the selected time range.
             </p>
             <UvYearlyLineChart :data="yearlyChartRows" />
           </div>
 
           <div class="uv-insight-panel insight-card-wrap">
             <InsightCard
-              title="Live Insight"
+              title="What Stands Out"
               :content="uvInsightText"
             />
           </div>
@@ -708,7 +708,7 @@ onMounted(async () => {
   margin: 6px 0 14px;
   font-size: 0.92rem;
   line-height: 1.45;
-  color: #6b7280;
+  color: #9ca3af;
 }
 
 .chart-card-lg {
@@ -735,6 +735,12 @@ onMounted(async () => {
   color: #9ca3af;
   font-size: 0.9rem;
   line-height: 1.45;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
 }
 
 .cancer-summary-wrap :deep(.summary-grid) {

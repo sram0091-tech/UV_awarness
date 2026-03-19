@@ -10,7 +10,10 @@ defineProps({
 
 <template>
   <div class="legend-card">
-    <div class="legend-title">{{ title }}</div>
+    <div class="legend-header">
+      <div class="legend-title">{{ title }}</div>
+      <div class="legend-subtitle">Understand what each UV level means at a glance.</div>
+    </div>
 
     <div class="legend-list">
       <div
@@ -34,13 +37,29 @@ defineProps({
 <style scoped>
 .legend-card {
   display: grid;
-  gap: 14px;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(24, 24, 29, 0.95), rgba(18, 18, 22, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
+}
+
+.legend-header {
+  display: grid;
+  gap: 4px;
 }
 
 .legend-title {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #fff;
+}
+
+.legend-subtitle {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #9ca3af;
 }
 
 .legend-list {
@@ -69,6 +88,7 @@ defineProps({
 .legend-item.active {
   border-color: rgba(250, 204, 21, 0.35);
   background: rgba(250, 204, 21, 0.08);
+  box-shadow: 0 10px 24px rgba(250, 204, 21, 0.08);
 }
 
 .legend-dot {
@@ -76,6 +96,7 @@ defineProps({
   height: 12px;
   border-radius: 999px;
   margin-top: 6px;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
 }
 
 .legend-copy {
@@ -86,12 +107,13 @@ defineProps({
 .legend-copy strong {
   color: #fff;
   font-size: 1rem;
+  line-height: 1.3;
 }
 
 .legend-copy small {
   color: #d1d5db;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.94rem;
+  line-height: 1.55;
 }
 
 .active-pill {
@@ -102,5 +124,22 @@ defineProps({
   color: #fde68a;
   font-size: 0.8rem;
   font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .legend-card {
+    padding: 16px;
+  }
+
+  .legend-item {
+    grid-template-columns: 12px 1fr;
+  }
+
+  .active-pill {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 2px;
+  }
 }
 </style>

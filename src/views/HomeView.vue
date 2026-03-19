@@ -5,26 +5,26 @@ import { getNavigation } from '../services/homeApi.js'
 
 const router = useRouter()
 
-const title = ref('Sun Safety Dashboard')
+const title = ref('Understand the Sun. Protect Your Skin.')
 const tagline = ref(
-  'Australia experiences some of the highest skin cancer rates globally. Explore UV exposure patterns, compare cancer incidence trends, and challenge common myths about sun safety through one interactive platform.'
+  'Australia has one of the highest skin cancer rates in the world, yet everyday UV exposure is still easy to underestimate. Explore real patterns, understand the risks, and make more confident choices before damage is done.'
 )
 
 const introText = ref(
-  'Use the dashboard to explore cancer incidence and UV insights, or visit the myths page for quick, evidence-based facts about sun protection.'
+  'Discover when UV is most intense, see how sun risk connects to skin cancer trends, and challenge the habits and myths that stop people from protecting themselves properly.'
 )
 
 const actions = ref([
   {
-    label: 'Cancer Incidence & UV Insights Dashboard',
-    subtext: 'Explore cancer and UV data in one place',
+    label: 'Explore Your Sun Risk',
+    subtext: 'See UV patterns and skin cancer insights in one place',
     path: '/dashboard',
     primary: true,
-    icon: '📊'
+    icon: '📈'
   },
   {
-    label: 'Sun Safety Myths',
-    subtext: 'Debunk common myths with evidence',
+    label: 'Break the Myths',
+    subtext: 'Unlearn common sun safety misconceptions with clear facts',
     path: '/myths',
     primary: false,
     icon: '☀️'
@@ -50,7 +50,7 @@ function go(path) {
   <div class="page-content home-page">
     <div class="hero-wrap">
       <div class="home-hero">
-        <p class="hero-kicker">Australia’s Sun Risk in Plain Sight</p>
+        <p class="hero-kicker">Australia’s Sun Risk, Made Clear</p>
         <h1>{{ title }}</h1>
 
         <p class="home-tagline">{{ tagline }}</p>
@@ -59,11 +59,11 @@ function go(path) {
         <div class="home-image-strip">
           <img
             src="/homepageimage.webp"
-            alt="Sun Safety Dashboard"
+            alt="Sun safety awareness"
             class="home-hero-image"
           >
           <div class="image-overlay">
-            <div class="overlay-badge">Sun awareness starts with better decisions</div>
+            <div class="overlay-badge">Know your risk before the damage begins</div>
           </div>
         </div>
 
@@ -100,39 +100,44 @@ function go(path) {
   max-width: 1500px;
   margin: 0 auto;
 }
+
 .home-hero {
   text-align: center;
-  padding: 12px 0 32px;
+  padding: 18px 0 40px;
 }
 
 .hero-kicker {
-  margin: 6px 0 12px;
+  margin: 6px 0 14px;
   color: #facc15;
   font-size: 0.92rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .home-hero h1 {
-  margin: 0 0 16px;
-  font-size: clamp(2.7rem, 5vw, 5.2rem);
-  line-height: 1.02;
+  max-width: 1100px;
+  margin: 0 auto 18px;
+  font-size: clamp(3rem, 5.4vw, 5.6rem);
+  line-height: 0.98;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #ffffff;
 }
 
 .home-tagline {
-  max-width: 1100px;
-  margin: 0 auto 12px;
+  max-width: 1080px;
+  margin: 0 auto 14px;
   font-size: 1.14rem;
-  line-height: 1.7;
+  line-height: 1.75;
   color: #f4f4f5;
 }
 
 .home-intro {
   max-width: 980px;
-  margin: 0 auto 28px;
+  margin: 0 auto 32px;
   font-size: 1rem;
-  line-height: 1.7;
+  line-height: 1.75;
   color: #b9bcc6;
 }
 
@@ -140,11 +145,11 @@ function go(path) {
   position: relative;
   width: 1150px;
   max-width: 100%;
-  height: 520px;
-  margin: 0 auto 30px;
-  border-radius: 28px;
+  height: 540px;
+  margin: 0 auto 34px;
+  border-radius: 30px;
   overflow: hidden;
-  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 26px 54px rgba(0, 0, 0, 0.36);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -164,21 +169,21 @@ function go(path) {
 .image-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.04));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.03));
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 18px;
+  padding: 20px;
 }
 
 .overlay-badge {
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(15, 23, 42, 0.76);
   color: #f8fafc;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  padding: 10px 16px;
-  font-size: 0.94rem;
-  font-weight: 600;
+  padding: 12px 18px;
+  font-size: 0.96rem;
+  font-weight: 700;
   backdrop-filter: blur(10px);
 }
 
@@ -234,7 +239,7 @@ function go(path) {
 }
 
 .cta-title {
-  font-size: 1.15rem;
+  font-size: 1.18rem;
   font-weight: 800;
   line-height: 1.2;
   color: #fff;
@@ -243,7 +248,7 @@ function go(path) {
 .cta-subtext {
   font-size: 0.95rem;
   color: #c8ccd5;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .cta-arrow {
@@ -256,7 +261,12 @@ function go(path) {
 
 @media (max-width: 900px) {
   .home-hero {
-    padding: 8px 0 24px;
+    padding: 10px 0 24px;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    line-height: 1.02;
   }
 
   .home-image-strip {
