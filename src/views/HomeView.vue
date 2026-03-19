@@ -1,45 +1,35 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getNavigation } from '../services/homeApi.js'
 
 const router = useRouter()
 
-const title = ref('Understand the Sun. Protect Your Skin.')
+const title = ref('See the Sun More Clearly')
 const tagline = ref(
-  'Australia has one of the highest skin cancer rates in the world, yet everyday UV exposure is still easy to underestimate. Explore real patterns, understand the risks, and make more confident choices before damage is done.'
+  'Real UV patterns. Clear skin cancer insights. Better sun-safe choices.'
 )
 
 const introText = ref(
-  'Discover when UV is most intense, see how sun risk connects to skin cancer trends, and challenge the habits and myths that stop people from protecting themselves properly.'
+  'Built to help people understand risk, challenge myths, and act earlier.'
 )
 
 const actions = ref([
   {
-    label: 'Explore Your Sun Risk',
-    subtext: 'See UV patterns and skin cancer insights in one place',
+    label: 'Explore Sun Risk',
+    subtext: 'See patterns, compare trends, and understand where risk is highest',
     path: '/dashboard',
     primary: true,
-    icon: '📈'
+    icon: '☀️'
   },
   {
-    label: 'Break the Myths',
-    subtext: 'Unlearn common sun safety misconceptions with clear facts',
+    label: 'Myth vs Fact',
+    subtext: 'Break common sun safety myths with clear, evidence-based answers',
     path: '/myths',
     primary: false,
-    icon: '☀️'
+    icon: '✨'
   }
 ])
 
-onMounted(async () => {
-  try {
-    const data = await getNavigation()
-    if (data?.title) title.value = data.title
-    if (data?.tagline) tagline.value = data.tagline
-  } catch {
-    // keep defaults
-  }
-})
 
 function go(path) {
   router.push(path || '/')
@@ -103,7 +93,7 @@ function go(path) {
 
 .home-hero {
   text-align: center;
-  padding: 18px 0 40px;
+  padding: 22px 0 40px;
 }
 
 .hero-kicker {
@@ -116,28 +106,29 @@ function go(path) {
 }
 
 .home-hero h1 {
-  max-width: 1100px;
-  margin: 0 auto 18px;
-  font-size: clamp(3rem, 5.4vw, 5.6rem);
-  line-height: 0.98;
+  max-width: 1000px;
+  margin: 0 auto 16px;
+  font-size: clamp(3.1rem, 5.6vw, 5.8rem);
+  line-height: 0.96;
   font-weight: 900;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   color: #ffffff;
 }
 
 .home-tagline {
-  max-width: 1080px;
-  margin: 0 auto 14px;
-  font-size: 1.14rem;
-  line-height: 1.75;
+  max-width: 860px;
+  margin: 0 auto 10px;
+  font-size: 1.2rem;
+  line-height: 1.55;
   color: #f4f4f5;
+  font-weight: 500;
 }
 
 .home-intro {
-  max-width: 980px;
+  max-width: 700px;
   margin: 0 auto 32px;
   font-size: 1rem;
-  line-height: 1.75;
+  line-height: 1.6;
   color: #b9bcc6;
 }
 
@@ -265,7 +256,7 @@ function go(path) {
   }
 
   .home-hero h1 {
-    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-size: clamp(2.5rem, 8vw, 4.2rem);
     line-height: 1.02;
   }
 
