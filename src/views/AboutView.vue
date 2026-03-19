@@ -1,6 +1,7 @@
 <script setup>
 </script>
 
+
 <template>
   <div class="page-content">
     <div class="about-wrap">
